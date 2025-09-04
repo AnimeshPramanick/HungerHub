@@ -1,6 +1,7 @@
 import UserModel from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import verifyEmailTemplate from "../utils/verifyEmailTemplate.js";
+import sendEmail from "../config/sendEmail.js";
 
 export async function registerUserController(req, res) {
   try {
@@ -47,9 +48,43 @@ export async function registerUserController(req, res) {
 
     return res.status(200).json({
       message: "Verification successful",
+      error: false,
       success: true,
+      data: savedUser,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
+
+export async function verifyEmailController(req, res) {
+  try {
+    const code = req.body.code;
+
+    const user = await UserModel.findOne({ _id: code });
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid verification code",
+        success: false,
+        error: true,
+      });
+    }
+
+    const updatedUser = await UserModel.updateOne(
+      { _id: code },
+      { verify_email: true }
+    );
+
+    return res.status(200).json({
+      message: "Email verified successfully",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
   }
 }
