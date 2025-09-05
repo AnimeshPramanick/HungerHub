@@ -88,3 +88,49 @@ export async function verifyEmailController(req, res) {
       .json({ message: error.message, success: false, error: true }); // Internal Server Error
   }
 }
+
+//login controller
+export async function loginUserController(req, res) {
+  try {
+    const { email, password } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User does not exist",
+        success: false,
+        error: true,
+      });
+    }
+
+    if (user.status !== "active") {
+      return res.status(403).json({
+        message: "Your account is not active. Please contact support.",
+        success: false,
+        error: true,
+      });
+    }
+
+    const isMatch = await bcryptjs.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Wrong password",
+        success: false,
+        error: true,
+      });
+    }
+
+    const accessToken = await generateAccessToken(user._id);
+    const refreshToken = await generateRefreshToken(user._id);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Set to true in production
+      sameSite: "Strict", // Adjust based on your requirements
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
