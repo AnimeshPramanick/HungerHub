@@ -2,6 +2,8 @@ import UserModel from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import verifyEmailTemplate from "../utils/verifyEmailTemplate.js";
 import sendEmail from "../config/sendEmail.js";
+import generateRefreshToken from "../utils/generateRefreshToken.js";
+import generateAccessToken from "../utils/generateAccessToken.js";
 
 export async function registerUserController(req, res) {
   try {
@@ -93,6 +95,15 @@ export async function verifyEmailController(req, res) {
 export async function loginUserController(req, res) {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "All fields are required",
+        success: false,
+        error: true,
+      });
+    }
+
     const user = await UserModel.findOne({ email });
     if (!user) {
       return res.status(400).json({
@@ -122,11 +133,19 @@ export async function loginUserController(req, res) {
     const accessToken = await generateAccessToken(user._id);
     const refreshToken = await generateRefreshToken(user._id);
 
-    res.cookie("refreshToken", refreshToken, {
+    const cookiesOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Set to true in production
-      sameSite: "Strict", // Adjust based on your requirements
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      secure: true,
+      sameSite: "None",
+    };
+    res.cookie("accessToken", accessToken, cookiesOptions);
+    res.cookie("refreshToken", refreshToken, cookiesOptions);
+
+    return res.status(200).json({
+      message: "Login successful",
+      success: true,
+      error: false,
+      data: { accessToken, refreshToken },
     });
   } catch (error) {
     return res
