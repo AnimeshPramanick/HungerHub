@@ -179,7 +179,7 @@ const Home = () => {
       description: "On weekend orders",
       code: "WEEKEND20",
       backgroundColor: "bg-red-100",
-      textColor: "text-red-600",
+      textColor: "text-red-700",
     },
   ];
 
