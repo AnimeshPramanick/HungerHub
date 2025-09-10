@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
+import UserModel from "../models/user.model.js";
 
 const generateRefreshToken = async (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
     expiresIn: "7d",
   });
 

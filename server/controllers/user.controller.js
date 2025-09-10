@@ -153,3 +153,33 @@ export async function loginUserController(req, res) {
       .json({ message: error.message, success: false, error: true }); // Internal Server Error
   }
 }
+
+//logout controller
+export async function logoutUserController(req, res) {
+  try {
+    const userId = req.userId;
+    const cookiesOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+
+    res.clearCookie("accessToken", cookiesOptions);
+    res.clearCookie("refreshToken", cookiesOptions);
+
+    const removeRefreshToken = await UserModel.updateOne(
+      { _id: userId },
+      { $unset: { refreshToken: "" } }
+    );
+
+    return res.status(200).json({
+      message: "Logout successful",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
