@@ -9,6 +9,7 @@ import {
   forgotPasswordController,
   verifyOtpController,
   resetPasswordController,
+  refreshTokenController,
 } from "../controllers/user.controller.js";
 
 import auth from "../middleware/auth.js";
@@ -30,5 +31,6 @@ userRouter.put("/update-details", auth, updateUserDetailsController);
 userRouter.post("/forgot-password", forgotPasswordController);
 userRouter.put("/verify-otp", verifyOtpController);
 userRouter.put("/reset-password", auth, resetPasswordController);
+userRouter.post("/refresh-token", refreshTokenController);
 
 export default userRouter;
