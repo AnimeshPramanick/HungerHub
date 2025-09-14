@@ -4,6 +4,7 @@ import verifyEmailTemplate from "../utils/verifyEmailTemplate.js";
 import sendEmail from "../config/sendEmail.js";
 import generateRefreshToken from "../utils/generateRefreshToken.js";
 import generateAccessToken from "../utils/generateAccessToken.js";
+import uploadImage from "../utils/uploadImage.js";
 
 export async function registerUserController(req, res) {
   try {
@@ -188,6 +189,29 @@ export async function logoutUserController(req, res) {
       error: false,
     });
   } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
+
+//upload profile picture
+export async function uploadProfilePictureController(req, res) {
+  try {
+    const image = req.file;
+
+    const upload = await uploadImage(image);
+
+    return res.status(200).json({
+      message: "Profile picture uploaded successfully",
+      success: true,
+      error: false,
+      data: upload,
+    });
+
+    console.log("Received image file:", image);
+  } catch (error) {
+    console.error("Error uploading profile picture:", error);
     return res
       .status(500)
       .json({ message: error.message, success: false, error: true }); // Internal Server Error
