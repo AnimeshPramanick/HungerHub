@@ -5,6 +5,8 @@ import sendEmail from "../config/sendEmail.js";
 import generateRefreshToken from "../utils/generateRefreshToken.js";
 import generateAccessToken from "../utils/generateAccessToken.js";
 import uploadImage from "../utils/uploadImage.js";
+import forgotPasswordTemplate from "../utils/forgotPasswordTemplate.js";
+import generateOtp from "../utils/generateOtp.js";
 
 export async function registerUserController(req, res) {
   try {
@@ -42,7 +44,7 @@ export async function registerUserController(req, res) {
 
     const verifyEmail = await sendEmail({
       sendTo: email,
-      subject: "Welcome to UrbanNest",
+      subject: "Welcome to HungerHub!",
       html: verifyEmailTemplate({
         name,
         url: verifyEmailUrl,
@@ -50,7 +52,8 @@ export async function registerUserController(req, res) {
     });
 
     return res.status(200).json({
-      message: "Verification successful",
+      message:
+        "Registration successful! Please check your email to verify your account.",
       error: false,
       success: true,
       data: savedUser,
@@ -198,7 +201,8 @@ export async function logoutUserController(req, res) {
 //upload profile picture
 export async function uploadProfilePictureController(req, res) {
   try {
-    const image = req.file;
+    const userId = req.userId; //auth middleware
+    const image = req.file; //multer middleware
     if (!image) {
       return res.status(400).json({
         message: "No image file provided",
@@ -210,6 +214,11 @@ export async function uploadProfilePictureController(req, res) {
     console.log("Received image file:", image);
 
     const uploadResult = await uploadImage(image);
+
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, {
+      avatar: uploadResult.url,
+    });
+
     console.log("Upload result:", uploadResult);
 
     if (!uploadResult) {
@@ -222,12 +231,195 @@ export async function uploadProfilePictureController(req, res) {
 
     return res.status(200).json({
       message: "Profile picture uploaded successfully",
-      data: uploadResult,
+      data: {
+        _id: userId,
+        avatar: uploadResult.url,
+      },
       success: true,
       error: false,
     });
   } catch (error) {
     console.error("Error uploading profile picture:", error);
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
+
+//update user details
+export async function updateUserDetailsController(req, res) {
+  try {
+    const userId = req.userId;
+
+    const { name, mobile, password, address } = req.body;
+
+    let hashPassword = "";
+
+    if (password) {
+      const salt = await bcryptjs.genSalt(10);
+      hashPassword = await bcryptjs.hash(password, salt);
+    }
+
+    const updateUser = await UserModel.updateOne(
+      { _id: userId },
+      {
+        ...(name && { name: name }),
+        ...(mobile && { mobile: mobile }),
+        ...(password && { password: hashPassword }),
+        ...(address && { address: address }),
+      },
+      { new: true }
+    );
+    return res.status(200).json({
+      message: "User details updated successfully",
+      success: true,
+      data: updateUser,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message || error, success: false, error: true }); // Internal Server Error
+  }
+}
+
+//forgot password not login user
+export async function forgotPasswordController(req, res) {
+  try {
+    const { email } = req.body;
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User does not exist",
+        success: false,
+        error: true,
+      });
+    }
+
+    const otp = generateOtp();
+    const otpExpiry = Date.now() + 10 * 60 * 1000; // 10 minutes from now
+
+    const update = await UserModel.findByIdAndUpdate(user._id, {
+      forgot_password_otp: otp,
+      forgot_password_expiry: new Date(otpExpiry).toISOString(),
+    });
+
+    await sendEmail({
+      sendTo: email,
+      subject: "Your Password Reset OTP",
+      html: forgotPasswordTemplate(user.name, otp),
+    });
+
+    return res.status(200).json({
+      message: "OTP sent to your email",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true }); // Internal Server Error
+  }
+}
+
+//verify otp
+export async function verifyOtpController(req, res) {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: "Email and OTP are required",
+        success: false,
+        error: true,
+      });
+    }
+
+    const user = await UserModel.findOne({ email }); // ✅ First fetch the user
+    if (!user) {
+      return res.status(400).json({
+        message: "User does not exist",
+        success: false,
+        error: true,
+      });
+    }
+
+    const currentTime = new Date().toISOString();
+
+    if (user.forgot_password_expiry < currentTime) {
+      // ✅ Now it's safe to use 'user'
+      return res.status(400).json({
+        message: "OTP has expired",
+        success: false,
+        error: true,
+      });
+    }
+
+    if (otp !== user.forgot_password_otp) {
+      return res.status(400).json({
+        message: "Invalid OTP",
+        success: false,
+        error: true,
+      });
+    }
+
+    return res.status(200).json({
+      message: "OTP verified successfully",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true });
+  }
+}
+
+//reset password
+export async function resetPasswordController(req, res) {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    if (!email || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message: "Email, new password and confirm password are required",
+        success: false,
+        error: true,
+      });
+    }
+
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: "New password and confirm password do not match",
+        success: false,
+        error: true,
+      });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({
+        message: "User does not exist",
+        success: false,
+        error: true,
+      });
+    }
+
+    const salt = await bcryptjs.genSalt(10);
+    const hashedPassword = await bcryptjs.hash(newPassword, salt);
+
+    await UserModel.findByIdAndUpdate(user._id, {
+      password: hashedPassword,
+      forgot_password_otp: null,
+      forgot_password_expiry: null,
+    });
+
+    return res.status(200).json({
+      message: "Password reset successfully",
+      success: true,
+      error: false,
+    });
+  } catch (error) {
     return res
       .status(500)
       .json({ message: error.message, success: false, error: true }); // Internal Server Error

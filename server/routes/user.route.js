@@ -5,6 +5,10 @@ import {
   loginUserController,
   logoutUserController,
   uploadProfilePictureController,
+  updateUserDetailsController,
+  forgotPasswordController,
+  verifyOtpController,
+  resetPasswordController,
 } from "../controllers/user.controller.js";
 
 import auth from "../middleware/auth.js";
@@ -22,5 +26,9 @@ userRouter.put(
   upload.single("profilePicture"),
   uploadProfilePictureController
 );
+userRouter.put("/update-details", auth, updateUserDetailsController);
+userRouter.post("/forgot-password", forgotPasswordController);
+userRouter.put("/verify-otp", verifyOtpController);
+userRouter.put("/reset-password", auth, resetPasswordController);
 
 export default userRouter;
