@@ -199,17 +199,33 @@ export async function logoutUserController(req, res) {
 export async function uploadProfilePictureController(req, res) {
   try {
     const image = req.file;
+    if (!image) {
+      return res.status(400).json({
+        message: "No image file provided",
+        success: false,
+        error: true,
+      });
+    }
 
-    const upload = await uploadImage(image);
+    console.log("Received image file:", image);
+
+    const uploadResult = await uploadImage(image);
+    console.log("Upload result:", uploadResult);
+
+    if (!uploadResult) {
+      return res.status(500).json({
+        message: "Failed to upload image to cloud storage",
+        success: false,
+        error: true,
+      });
+    }
 
     return res.status(200).json({
       message: "Profile picture uploaded successfully",
+      data: uploadResult,
       success: true,
       error: false,
-      data: upload,
     });
-
-    console.log("Received image file:", image);
   } catch (error) {
     console.error("Error uploading profile picture:", error);
     return res
