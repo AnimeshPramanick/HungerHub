@@ -130,7 +130,7 @@ export async function loginUserController(req, res) {
       });
     }
 
-    const accessToken = await generateAccessToken(user._id);
+    const accessToken = generateAccessToken(user._id);
     const refreshToken = await generateRefreshToken(user._id);
 
     const cookiesOptions = {
@@ -167,10 +167,20 @@ export async function logoutUserController(req, res) {
     res.clearCookie("accessToken", cookiesOptions);
     res.clearCookie("refreshToken", cookiesOptions);
 
-    const removeRefreshToken = await UserModel.updateOne(
+    const updateRefreshToken = await UserModel.updateOne(
       { _id: userId },
-      { $unset: { refreshToken: "" } }
+      { refresh_token: "" }
     );
+
+    console.log(`Logout: Updated user ${userId}, result:`, updateRefreshToken);
+
+    if (updateRefreshToken.matchedCount === 0) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+        error: true,
+      });
+    }
 
     return res.status(200).json({
       message: "Logout successful",

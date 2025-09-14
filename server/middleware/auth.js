@@ -1,3 +1,5 @@
+import jwt from "jsonwebtoken";
+
 const auth = async (req, res, next) => {
   try {
     const token =
@@ -9,7 +11,7 @@ const auth = async (req, res, next) => {
         .json({ message: "No token provided", success: false, error: true });
     }
 
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     if (!decoded) {
       return res
