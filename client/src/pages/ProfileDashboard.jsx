@@ -23,35 +23,60 @@ const mockReviews = [
 
 const mockOrders = [
   {
-    id: "ord1",
+    id: "ord98765",
     restaurant: "HungerHub",
     date: "September 5, 2024",
-    total: 10.50,
+    total: 32.75,
     items: "1x Cheesy Garlic Bread",
-    status: "Delivered",
-    category: "Bread",
-    image: "https://images.unsplash.com/photo-1627889104118-a6d10c0e34f6?q=80&w=1780&auto=format&fit=crop",
+    status: "Completed",
+    category: "All Type of Food",
+    paymentMethod: "Online",
+    image: "https://i.postimg.cc/x1vJ4gts/Screenshot-2025-09-15-083706.png"
   },
   {
-    id: "ord2",
+    id: "ord54321",
     restaurant: "HungerHub",
     date: "August 12, 2024",
     total: 18.75,
     items: "1x Biryani",
     status: "Delivered",
-    category: "Biryani",
-    image: "https://images.unsplash.com/photo-1622312675971-87353f4d96c9?q=80&w=1780&auto=format&fit=crop",
+    category: "All Type of Food",
+    paymentMethod: "Online",
+    image: "https://i.postimg.cc/Gh96K5hC/Screenshot-2025-09-15-084745.png"
   },
   {
-    id: "ord4",
+    id: "ord34567",
+    restaurant: "HungerHub",
+    date: "August 1, 2024",
+    total: 12.00,
+    items: "1x Burger",
+    status: "Delivered",
+    category: "All Type of Food",
+    paymentMethod: "Offline",
+    image: "https://i.postimg.cc/8CnZ71Mf/Screenshot-2025-09-15-085041.png"
+  },
+  {
+    id: "ord11223",
     restaurant: "HungerHub",
     date: "July 24, 2024",
     total: 25.00,
     items: "1x The 'Ultimate Burger'",
     status: "Delivered",
-    category: "Burger",
-    image: "https://images.unsplash.com/photo-1568901007716-e41c46ae2869?q=80&w=1780&auto=format&fit=crop",
-  }
+    category: "All Type of Food",
+    paymentMethod: "Online",
+    image: "https://i.postimg.cc/KvRvTf6K/Screenshot-2025-09-15-085657.png"
+  },
+  {
+    id: "ord88990",
+    restaurant: "HungerHub",
+    date: "June 30, 2024",
+    total: 45.50,
+    items: "1x Chicken Tikka Masala",
+    status: "Delivered",
+    category: "All Type of Food",
+    paymentMethod: "Offline",
+    image: "https://i.postimg.cc/wMzLvPfs/Screenshot-2025-09-15-085358.png"
+  },
 ];
 
 const mockAddresses = [
@@ -67,50 +92,22 @@ const mockAddresses = [
   },
 ];
 
-const mockCards = [
-  {
-    id: "card1",
-    type: "Visa",
-    last4: "4242",
-  },
-  {
-    id: "card2",
-    type: "MasterCard",
-    last4: "1234",
-  },
-];
-
-const mockPaymentHistory = [
-  {
-    id: "pay1",
-    orderId: "ORD-98765",
-    restaurant: "HungerHub",
-    amount: 32.75,
-    date: "August 15, 2024",
-    method: "Cash on Delivery",
-    status: "Completed",
-  },
-  {
-    id: "pay3",
-    orderId: "ORD-54321",
-    restaurant: "HungerHub",
-    amount: 12.00,
-    date: "August 1, 2024",
-    method: "Cash on Delivery",
-    status: "Completed",
-  },
-];
-
-
 const App = () => {
   const [activeSection, setActiveSection] = useState("Activity");
   const [reviews, setReviews] = useState([]);
   const [orders, setOrders] = useState([]);
   const [addresses, setAddresses] = useState([]);
-  const [cards, setCards] = useState([]);
-  const [paymentHistory, setPaymentHistory] = useState([]);
   const [userId, setUserId] = useState(null);
   const [isAddingData, setIsAddingData] = useState(false);
+  
+  // State for profile settings form
+  const [profile, setProfile] = useState({
+    name: "Sandipon Halder",
+    email: "sandipon.h@example.com",
+    phone: "+91 98765 43210",
+    photo: "https://placehold.co/150x150/eab308/ffffff?text=User",
+    password: ""
+  });
 
   const db = useRef(null);
   const auth = useRef(null);
@@ -174,8 +171,6 @@ const App = () => {
     const reviewsRef = collection(db.current, `artifacts/default-app-id/users/${userId}/reviews`);
     const ordersRef = collection(db.current, `artifacts/default-app-id/users/${userId}/orders`);
     const addressesRef = collection(db.current, `artifacts/default-app-id/users/${userId}/addresses`);
-    const cardsRef = collection(db.current, `artifacts/default-app-id/users/${userId}/cards`);
-    const paymentHistoryRef = collection(db.current, `artifacts/default-app-id/users/${userId}/paymentHistory`);
 
     const unsubscribeReviews = onSnapshot(reviewsRef, (snapshot) => {
       const reviewList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -192,23 +187,11 @@ const App = () => {
       setAddresses(addressList);
     });
 
-    const unsubscribeCards = onSnapshot(cardsRef, (snapshot) => {
-      const cardList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCards(cardList);
-    });
-
-    const unsubscribePaymentHistory = onSnapshot(paymentHistoryRef, (snapshot) => {
-      const paymentList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPaymentHistory(paymentList);
-    });
-
     // Clean up listeners on component unmount
     return () => {
       unsubscribeReviews();
       unsubscribeOrders();
       unsubscribeAddresses();
-      unsubscribeCards();
-      unsubscribePaymentHistory();
     };
   }, [userId]);
 
@@ -228,15 +211,9 @@ const App = () => {
     const addressPromises = mockAddresses.map(address =>
       setDoc(doc(db.current, `artifacts/default-app-id/users/${userId}/addresses`, address.id), address)
     );
-    const cardPromises = mockCards.map(card =>
-      setDoc(doc(db.current, `artifacts/default-app-id/users/${userId}/cards`, card.id), card)
-    );
-    const paymentPromises = mockPaymentHistory.map(payment =>
-      setDoc(doc(db.current, `artifacts/default-app-id/users/${userId}/paymentHistory`, payment.id), payment)
-    );
 
     try {
-      await Promise.all([...reviewPromises, ...orderPromises, ...addressPromises, ...cardPromises, ...paymentPromises]);
+      await Promise.all([...reviewPromises, ...orderPromises, ...addressPromises]);
       console.log("Mock data added to Firestore!");
     } catch (e) {
       console.error("Error adding mock data: ", e);
@@ -250,15 +227,33 @@ const App = () => {
       try {
         await signOut(auth.current);
         setUserId(null);
-        setActiveSection("Activity"); // Reset to default view
+        setActiveSection("Logout"); // Set to a new "Logout" section
         console.log("User logged out successfully.");
       } catch (error) {
         console.error("Logout failed:", error);
       }
     }
   };
+  
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfile(prev => ({ ...prev, [name]: value }));
+  };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setProfile(prev => ({ ...prev, photo: event.target.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
   const renderContent = () => {
+    const sortedOrders = orders.slice().sort((a, b) => new Date(b.date) - new Date(a.date));
+
     switch (activeSection) {
       case "Activity":
         const combinedActivity = [
@@ -373,14 +368,15 @@ const App = () => {
             <p className="text-gray-600 mb-6">
               A comprehensive list of all your past orders from HungerHub.
             </p>
-            {orders.length > 0 ? (
+            {sortedOrders.length > 0 ? (
               <div className="space-y-4">
-                {orders.map((order) => (
+                {sortedOrders.map((order) => (
                   <div key={order.id} className="bg-gray-50 p-4 rounded-lg shadow-sm flex items-start">
-                    <div className="flex flex-col items-center justify-center p-2 rounded-lg mr-4 object-cover h-20 w-20"
-                      style={{ backgroundColor: getCategoryColor(order.category) }}>
-                      <span className="font-semibold text-white">{order.category}</span>
-                    </div>
+                    <img 
+                      src={order.image} 
+                      alt={order.items} 
+                      className="w-20 h-20 rounded-lg mr-4 object-cover"
+                    />
                     <div className="flex-1">
                       <div className="flex justify-between items-start mb-2">
                         <div>
@@ -427,59 +423,65 @@ const App = () => {
             )}
           </div>
         );
-      case "Online Payments":
+      case "Order Details":
         return (
-          <div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">Online Payments</h3>
-            <p className="text-gray-600 mb-4">
-              Here you can manage your saved credit and debit cards for quick and secure payments.
+          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-200">
+            <h3 className="text-3xl font-bold mb-2 text-gray-900">Order Details</h3>
+            <p className="text-gray-600 mb-6 text-base">
+              View a complete history of all your orders, including both online and offline payments.
             </p>
-            {cards.length > 0 ? (
-              cards.map((card) => (
-                <div key={card.id} className="bg-gray-50 p-4 rounded-lg shadow-sm mb-4">
-                  <h4 className="font-semibold text-lg text-gray-900">{card.type} ending in {card.last4}</h4>
-                  <p className="text-gray-700">Expires: **/**</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500">You have no saved cards.</p>
-            )}
-          </div>
-        );
-      case "Offline Payments":
-        return (
-          <div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">Offline Payments</h3>
-            <p className="text-gray-600 mb-4">
-              View a complete history of all your cash on delivery payments.
-            </p>
-            {paymentHistory.length > 0 ? (
-              <div className="bg-gray-50 p-4 rounded-lg shadow-sm">
-                <table className="min-w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-2 text-sm font-semibold text-gray-700">Order ID</th>
-                      <th className="text-left py-2 text-sm font-semibold text-gray-700">Restaurant</th>
-                      <th className="text-left py-2 text-sm font-semibold text-gray-700">Amount</th>
-                      <th className="text-left py-2 text-sm font-semibold text-gray-700">Date</th>
-                      <th className="text-left py-2 text-sm font-semibold text-gray-700">Status</th>
+      
+            {sortedOrders.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Order ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Restaurant</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Image</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Amount</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Payment Method</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">Items</th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {paymentHistory.map((payment) => (
-                      <tr key={payment.id} className="border-b last:border-b-0">
-                        <td className="py-2 text-sm text-gray-700">{payment.orderId}</td>
-                        <td className="py-2 text-sm text-gray-700">{payment.restaurant}</td>
-                        <td className="py-2 text-sm text-green-600 font-bold">${payment.amount.toFixed(2)}</td>
-                        <td className="py-2 text-sm text-gray-700">{payment.date}</td>
-                        <td className="py-2 text-sm text-green-600">{payment.status}</td>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {sortedOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-indigo-50 transition-colors duration-200">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.restaurant}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <img
+                            src={order.image}
+                            alt={`${order.restaurant} logo`}
+                            className="h-10 w-10 rounded-full object-cover shadow-sm"
+                            onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/E5E7EB/A1A1A1?text=img" }}
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">${order.total.toFixed(2)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.date}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{order.paymentMethod}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            ${order.status === 'Delivered' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-800">{order.items}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             ) : (
-              <p className="text-gray-500">You have no payment history.</p>
+              <div className="text-center py-10 px-4">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                </svg>
+                <h3 className="mt-2 text-lg font-medium text-gray-900">No Orders Found</h3>
+                <p className="mt-1 text-sm text-gray-500">You haven't placed any orders yet. Start shopping to see your history here!</p>
+              </div>
             )}
           </div>
         );
@@ -487,18 +489,90 @@ const App = () => {
         return (
           <div>
             <h3 className="text-2xl font-bold mb-4 text-gray-800">Profile Settings</h3>
-            <p className="text-gray-600">
-              Manage and update your personal information, including your name, email, and phone number.
+            <p className="text-gray-600 mb-6">
+              Manage and update your personal information.
             </p>
+            <div className="flex flex-col items-center space-y-4 mb-8">
+              <img src={profile.photo} alt="Profile" className="w-32 h-32 rounded-full border-4 border-gray-200 object-cover" />
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handlePhotoChange}
+                className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+              />
+            </div>
+            <form className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={profile.name}
+                  onChange={handleProfileChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm p-2 border"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={profile.email}
+                  onChange={handleProfileChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm p-2 border"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Phone Number</label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={profile.phone}
+                  onChange={handleProfileChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm p-2 border"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Password</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={profile.password}
+                  onChange={handleProfileChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm p-2 border"
+                  placeholder="********"
+                />
+                <p className="mt-2 text-sm text-gray-500">
+                  You can change your password here. Leave blank to keep current password.
+                </p>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
           </div>
         );
       case "Logout":
         return (
-          <div>
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">Logout</h3>
-            <p className="text-gray-600">
-              You have successfully logged out. You can sign back in at any time.
+          <div className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-sm text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944c-1.928 0-3.714.48-5.32 1.312M6 6v.01M18 6v.01M6 18v.01M18 18v.01" />
+            </svg>
+            <h3 className="mt-4 text-2xl font-bold text-gray-800">Logged Out Successfully</h3>
+            <p className="mt-2 text-gray-600">
+              You have been securely logged out of your HungerHub account. We hope to see you again soon!
             </p>
+            <button 
+              onClick={() => setActiveSection("Activity")} 
+              className="mt-6 px-4 py-2 rounded-lg bg-yellow-500 text-white font-semibold hover:bg-yellow-600 transition-colors"
+            >
+              Sign In Again
+            </button>
           </div>
         );
       default:
@@ -514,16 +588,8 @@ const App = () => {
   };
   
   const getCategoryColor = (category) => {
-    switch (category) {
-      case "Bread":
-        return "#fcd34d"; // Yellow
-      case "Biryani":
-        return "#67e8f9"; // Cyan
-      case "Burger":
-        return "#ea580c"; // Orange
-      default:
-        return "#cbd5e1"; // Gray
-    }
+    // Only one category now, so we can use a single color or a variation.
+    return "#ea580c"; // A single color for "All Type of Food"
   };
 
   return (
@@ -602,19 +668,16 @@ const App = () => {
               </li>
             ))}
             <li className="text-sm uppercase font-bold text-gray-400 tracking-wider pt-4 mb-2">Payments</li>
-            {["Offline Payments", "Online Payments"].map((section) => (
-              <li
-                key={section}
-                onClick={() => setActiveSection(section)}
+            <li
+                onClick={() => setActiveSection("Order Details")}
                 className={`cursor-pointer px-4 py-2 rounded-lg transition-colors duration-200 ${
-                  activeSection === section
+                  activeSection === "Order Details"
                     ? "bg-yellow-500 text-white font-semibold shadow-md"
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
               >
-                {section}
+                Order Details
               </li>
-            ))}
             <li className="text-sm uppercase font-bold text-gray-400 tracking-wider pt-4 mb-2">Account Settings</li>
               <li
                 onClick={() => setActiveSection("Profile Settings")}
