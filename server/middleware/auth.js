@@ -15,7 +15,10 @@ const auth = async (req, res, next) => {
         .json({ message: "No token provided", success: false, error: true });
     }
 
+<<<<<<< HEAD
     // 3️⃣ Verify token
+=======
+>>>>>>> 97ea8976569ee3814bec4a0987eff13664265061
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 4️⃣ If verification fails
