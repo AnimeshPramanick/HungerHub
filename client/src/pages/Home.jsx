@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Signup from "../pages/Signup";
 import {
   FaSearch,
   FaArrowRight,

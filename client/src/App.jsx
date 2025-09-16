@@ -3,6 +3,9 @@ import "./App.css";
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";   // adjust path if needed
+import Signup from "./pages/Signup";
 
 function App() {
   return (
@@ -14,6 +17,15 @@ function App() {
       <Footer />
     </div>
   );
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+      </Routes>
+    </Router>
+  );
 }
+
 
 export default App;
