@@ -1,12 +1,7 @@
-import { useState } from "react";
 import "./App.css";
 import { Outlet } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";   // adjust path if needed
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
 
 function App() {
   return (
@@ -18,6 +13,7 @@ function App() {
       <Footer />
     </div>
   );
+  /* Removed duplicate return statement - We're using React Router v6 with Outlet now
   return (
     <Router>
       <Routes>
@@ -26,8 +22,7 @@ function App() {
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
-  );
+  );*/
 }
-
 
 export default App;

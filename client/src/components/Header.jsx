@@ -1,13 +1,39 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import UNlogo from "../assets/UNlogo.svg";
+import axios from "axios";
 
 const Header = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    // Initialize auth state by checking localStorage directly
+    const token = localStorage.getItem("accessToken");
+    return !!token;
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+
+  // Check if user is authenticated on component mount and whenever location changes
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem("accessToken");
+      setIsAuthenticated(!!token);
+      console.log("Auth check - Is authenticated:", !!token);
+    };
+
+    // Check immediately when component mounts
+    checkAuth();
+
+    // Set up an interval to periodically check auth status
+    const authCheckInterval = setInterval(checkAuth, 2000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(authCheckInterval);
+  }, []);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -28,6 +54,59 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Logout function to call the backend API
+  const handleLogout = async () => {
+    try {
+      setIsLoading(true);
+      console.log("Starting logout process...");
+
+      // Get the access token from localStorage
+      const token = localStorage.getItem("accessToken");
+      console.log("Token exists:", !!token);
+
+      if (token) {
+        try {
+          await axios.post(
+            "http://localhost:5000/api/auth/logout",
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              withCredentials: true,
+            }
+          );
+          console.log("API logout successful");
+        } catch (apiError) {
+          console.error("API logout error:", apiError);
+          // Continue with logout process even if API fails
+        }
+      }
+
+      // Always clear local storage and cookies regardless of API success
+      localStorage.removeItem("accessToken");
+      console.log("Local storage cleared");
+
+      // Update authentication state
+      setIsAuthenticated(false);
+      console.log("Authentication state updated to:", false);
+
+      // Close the menu
+      setIsUserMenuOpen(false);
+
+      // Always redirect to home page
+      navigate("/");
+      console.log("Navigated to home page");
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still try to redirect on error
+      navigate("/");
+    } finally {
+      setIsLoading(false);
+      setIsUserMenuOpen(false);
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -78,8 +157,13 @@ const Header = () => {
           <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
+              className={`w-10 h-10 ${
+                isAuthenticated
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-blue-500 hover:bg-blue-600"
+              } text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors`}
               aria-label="User menu"
+              title={isAuthenticated ? "Logged In" : "Not Logged In"}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -99,44 +183,49 @@ const Header = () => {
 
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-40">
-                <Link
-                  to="/login"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-                <hr className="my-1 border-gray-200" />
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  Profile
-                </Link>
-                <Link
-                  to="/orders"
-                  className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  My Orders
-                </Link>
-                <button
-                  className="w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                  onClick={() => {
-                    console.log("Logging out");
-                    setIsUserMenuOpen(false);
-                  }}
-                >
-                  Logout
-                </button>
+                {!isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      My Orders
+                    </Link>
+                    <hr className="my-1 border-gray-200" />
+                    <button
+                      className="w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
+                      onClick={handleLogout}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Logging out..." : "Logout"}
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -233,8 +322,13 @@ const Header = () => {
           <div className="relative ml-4" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors"
+              className={`w-10 h-10 ${
+                isAuthenticated
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-blue-500 hover:bg-blue-600"
+              } text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors`}
               aria-label="User menu"
+              title={isAuthenticated ? "Logged In" : "Not Logged In"}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -254,37 +348,45 @@ const Header = () => {
 
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-40">
-                <Link to="/login" className="block px-4 py-2 hover:bg-blue-100">
-                  Login
-                </Link>
-                <Link
-                  to="/signup"
-                  className="block px-4 py-2 hover:bg-blue-100"
-                >
-                  Sign Up
-                </Link>
-                <hr className="my-1 border-gray-200" />
-                <Link
-                  to="/profile"
-                  className="block px-4 py-2 hover:bg-blue-100"
-                >
-                  Profile
-                </Link>
-                <Link
-                  to="/orders"
-                  className="block px-4 py-2 hover:bg-blue-100"
-                >
-                  My Orders
-                </Link>
-                <button
-                  className="w-full text-left px-4 py-2 hover:bg-blue-100"
-                  onClick={() => {
-                    console.log("Logging out");
-                    setIsUserMenuOpen(false);
-                  }}
-                >
-                  Logout
-                </button>
+                {!isAuthenticated ? (
+                  <>
+                    <Link
+                      to="/login"
+                      className="block px-4 py-2 hover:bg-blue-100"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      to="/signup"
+                      className="block px-4 py-2 hover:bg-blue-100"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to="/profile"
+                      className="block px-4 py-2 hover:bg-blue-100"
+                    >
+                      Profile
+                    </Link>
+                    <Link
+                      to="/orders"
+                      className="block px-4 py-2 hover:bg-blue-100"
+                    >
+                      My Orders
+                    </Link>
+                    <hr className="my-1 border-gray-200" />
+                    <button
+                      className="w-full text-left px-4 py-2 hover:bg-blue-100"
+                      onClick={handleLogout}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Logging out..." : "Logout"}
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>

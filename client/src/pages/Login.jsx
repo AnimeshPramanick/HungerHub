@@ -1,22 +1,57 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear error when user types
+    if (error) setError(null);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
 
-    console.log("Login Data:", formData);
-    alert("Login Successful!");
+    try {
+      setLoading(true);
+
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/login",
+        formData,
+        {
+          withCredentials: true, // Important for cookies to be set properly
+        }
+      );
+
+      console.log("Login Response:", response.data);
+
+      // Store tokens in localStorage for future use
+      if (response.data.data.accessToken) {
+        localStorage.setItem("accessToken", response.data.data.accessToken);
+      }
+
+      setLoading(false);
+
+      // Redirect to profile dashboard or home page
+      navigate("/profile");
+    } catch (err) {
+      setLoading(false);
+      setError(
+        err.response?.data?.message ||
+          "Login failed. Please check your credentials."
+      );
+      console.error("Login Error:", err);
+    }
   };
 
   return (
@@ -62,11 +97,40 @@ const Login = () => {
             </div>
           </div>
 
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition duration-300 flex items-center justify-center"
+            disabled={loading}
+            className={`w-full ${
+              loading ? "bg-gray-400" : "bg-red-600 hover:bg-red-700"
+            } text-white font-bold py-3 rounded-lg transition duration-300 flex items-center justify-center`}
           >
-            Login <FaSignInAlt className="ml-2" />
+            {loading ? (
+              "Logging in..."
+            ) : (
+              <>
+                Login <FaSignInAlt className="ml-2" />
+              </>
+            )}
           </button>
         </form>
 
