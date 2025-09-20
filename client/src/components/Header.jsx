@@ -144,7 +144,7 @@ const Header = () => {
           </div>
           <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
             <Link
-              to="/"
+              to={isAuthenticated ? "/home" : "/"}
               className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-amber-500 text-sm font-medium"
             >
               Home
@@ -226,7 +226,7 @@ const Header = () => {
           <div className="md:hidden" ref={mobileMenuRef}>
             <div className="pt-2 pb-3 space-y-1">
               <Link
-                to="/"
+                to={isAuthenticated ? "/home" : "/"}
                 className="bg-amber-50 border-amber-500 text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
               >
                 Home

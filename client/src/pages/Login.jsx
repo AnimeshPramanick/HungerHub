@@ -43,7 +43,7 @@ const Login = () => {
       setLoading(false);
 
       // Redirect to home page after successful login
-      navigate("/");
+      navigate("/home");
     } catch (err) {
       setLoading(false);
       setError(
