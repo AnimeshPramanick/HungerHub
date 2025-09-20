@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Signup from "../pages/Signup";
 import {
   FaSearch,
@@ -14,6 +14,7 @@ import {
 } from "react-icons/fa";
 import { GiNoodles, GiTacos, GiChopsticks } from "react-icons/gi";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Home = () => {
   const [location, setLocation] = useState("");
@@ -184,43 +185,90 @@ const Home = () => {
     },
   ];
 
+  // Animation variants
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8 } },
+  };
+
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
   return (
-    <div className="bg-yellow-300">
+    <div className="bg-white">
       {/* Hero Section */}
       <section
-        className="relative bg-cover bg-center h-[500px]"
+        className="relative bg-cover bg-center min-h-[80vh] md:min-h-[100vh] flex items-center"
         style={{
           backgroundImage:
-            "url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&h=1080')",
+            "url('https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=1920&h=1080&q=80')",
+          backgroundPosition: "center 30%",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/60"></div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 flex flex-col justify-center h-full text-center">
-          <span className="inline-block bg-yellow-500 text-black px-4 py-1 rounded-full text-sm font-bold mb-4 animate-pulse">
-            Free delivery on orders over $25!
-          </span>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Hunger Hub Restaurant
-          </h1>
-          <p className="text-xl text-white mb-8 max-w-2xl mx-auto">
-            Authentic flavors crafted with passion, delivered to your doorstep
-          </p>
+        <div className="absolute inset-0 bg-black/30"></div>
 
-          <div className="max-w-2xl mx-auto w-full flex justify-center gap-4">
-            <Link
-              to="/menu"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded-lg transition duration-300 flex items-center justify-center shadow-lg"
-            >
-              View Menu <FaArrowRight className="ml-2" />
-            </Link>
-            <Link
-              to="/order-online"
-              className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-4 px-8 rounded-lg transition duration-300 flex items-center justify-center shadow-lg"
-            >
-              Order Online <FaUtensils className="ml-2" />
-            </Link>
-          </div>
-        </div>
+        <motion.div
+          className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 py-16 md:py-24 flex flex-col justify-center items-center text-center"
+          initial="hidden"
+          animate="visible"
+          variants={staggerContainer}
+        >
+          <motion.span
+            className="inline-block bg-amber-500 text-black px-6 py-2 rounded-full text-sm font-bold mb-8 mx-auto"
+            variants={fadeInUp}
+            whileHover={{ scale: 1.05 }}
+          >
+            Free delivery on orders over $25!
+          </motion.span>
+
+          <motion.div className="mb-10 max-w-5xl" variants={fadeInUp}>
+            <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
+              <span className="text-amber-400">Delicious meals</span>
+              <span className="text-white"> delivered</span>
+            </h1>
+            <h1 className="text-5xl md:text-7xl font-bold text-white mb-6">
+              to your doorstep
+            </h1>
+          </motion.div>
+
+          <motion.p
+            className="text-xl text-white mb-12 max-w-2xl mx-auto opacity-90"
+            variants={fadeInUp}
+          >
+            Order from your favorite restaurants with just a few taps and enjoy
+            fresh, hot food in minutes.
+          </motion.p>
+
+          <motion.div
+            className="flex flex-col sm:flex-row gap-6 justify-center"
+            variants={fadeInUp}
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/menu"
+                className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-10 rounded-full transition duration-300 flex items-center justify-center shadow-lg text-lg"
+              >
+                View Menu <FaArrowRight className="ml-3" />
+              </Link>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                to="/order-online"
+                className="bg-amber-500 hover:bg-amber-600 text-black font-bold py-4 px-10 rounded-full transition duration-300 flex items-center justify-center shadow-lg text-lg"
+              >
+                Order Online <FaUtensils className="ml-3" />
+              </Link>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* How It Works */}
@@ -272,8 +320,8 @@ const Home = () => {
 
       {/* Popular Categories */}
       <section className="py-16 bg-yellow-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex justify-between items-center mb-8">
+        <div className="px-4 sm:px-6 mb-8 max-w-7xl mx-auto">
+          <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold text-gray-800">
               Popular Categories
             </h2>
@@ -284,28 +332,9 @@ const Home = () => {
               View All <FaArrowRight className="ml-2" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {popularCategories.map((category) => (
-              <Link
-                to={`/category/${category.id}`}
-                key={category.id}
-                className="group"
-              >
-                <div className="relative rounded-xl overflow-hidden shadow-md transition-transform duration-300 transform group-hover:scale-105">
-                  <img
-                    src={category.image}
-                    alt={category.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
-                    <h3 className="text-white font-semibold text-xl p-4 w-full">
-                      {category.name}
-                    </h3>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+        </div>
+        <div className="w-full">
+          <AutoScrollCategories categories={popularCategories} />
         </div>
       </section>
 
@@ -783,6 +812,104 @@ const Home = () => {
           </div>
         </div>
       </section>
+    </div>
+  );
+};
+
+// Auto Scroll Categories Component
+const AutoScrollCategories = ({ categories }) => {
+  const scrollContainerRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // We need to create a truly seamless loop by using multiple copies
+  // The first copy will be for display, the second will provide the illusion of infinite scrolling
+  const containerStyle = {
+    display: "flex",
+    overflow: "hidden",
+    position: "relative",
+    width: "100vw",
+    maxWidth: "100%",
+    margin: 0,
+    padding: 0,
+  };
+
+  // Create multiple copies for truly seamless scrolling
+  // We need at least 2 complete sets to ensure there's no visual break
+  const multipliedCategories = [
+    ...categories,
+    ...categories,
+    ...categories,
+    ...categories,
+  ];
+
+  useEffect(() => {
+    // This ensures the animation is smooth by calculating the proper width
+    // and optimizing the animation timing based on actual content
+    if (scrollContainerRef.current) {
+      const scrollerElement =
+        scrollContainerRef.current.querySelector(".scroller");
+
+      // Check if the element exists before proceeding
+      if (scrollerElement) {
+        // Set a new CSS variable with the actual width
+        const scrollerWidth = scrollerElement.offsetWidth / 2;
+        scrollContainerRef.current.style.setProperty(
+          "--scroller-width",
+          `${scrollerWidth}px`
+        );
+      }
+    }
+  }, [categories]);
+
+  return (
+    <div
+      className="overflow-hidden relative"
+      style={containerStyle}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      ref={scrollContainerRef}
+    >
+      <style jsx="true">{`
+        .scroller {
+          animation: scroll 30s linear infinite;
+        }
+
+        @keyframes scroll {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(calc(-50%));
+          }
+        }
+
+        .paused {
+          animation-play-state: paused;
+        }
+      `}</style>
+
+      <div className={`scroller flex gap-6 px-3 ${isPaused ? "paused" : ""}`}>
+        {multipliedCategories.map((category, index) => (
+          <Link
+            to={`/category/${category.id}`}
+            key={`${category.id}-${index}`}
+            className="group min-w-[250px] sm:min-w-[280px] flex-shrink-0"
+          >
+            <div className="relative rounded-xl overflow-hidden shadow-md transition-transform duration-300 transform group-hover:scale-105">
+              <img
+                src={category.image}
+                alt={category.name}
+                className="w-full h-48 object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                <h3 className="text-white font-semibold text-xl p-4 w-full">
+                  {category.name}
+                </h3>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 };

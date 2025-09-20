@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import UNlogo from "../assets/UNlogo.svg";
+import { FaTruck } from "react-icons/fa";
 import axios from "axios";
 
 const Header = () => {
@@ -9,7 +9,6 @@ const Header = () => {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    // Initialize auth state by checking localStorage directly
     const token = localStorage.getItem("accessToken");
     return !!token;
   });
@@ -17,21 +16,15 @@ const Header = () => {
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  // Check if user is authenticated on component mount and whenever location changes
+  // Check authentication state
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem("accessToken");
       setIsAuthenticated(!!token);
-      console.log("Auth check - Is authenticated:", !!token);
     };
 
-    // Check immediately when component mounts
     checkAuth();
-
-    // Set up an interval to periodically check auth status
     const authCheckInterval = setInterval(checkAuth, 2000);
-
-    // Cleanup interval on component unmount
     return () => clearInterval(authCheckInterval);
   }, []);
 
@@ -55,15 +48,11 @@ const Header = () => {
     };
   }, []);
 
-  // Logout function to call the backend API
+  // Logout
   const handleLogout = async () => {
     try {
       setIsLoading(true);
-      console.log("Starting logout process...");
-
-      // Get the access token from localStorage
       const token = localStorage.getItem("accessToken");
-      console.log("Token exists:", !!token);
 
       if (token) {
         try {
@@ -77,34 +66,20 @@ const Header = () => {
               withCredentials: true,
             }
           );
-          console.log("API logout successful");
         } catch (apiError) {
           console.error("API logout error:", apiError);
-          // Continue with logout process even if API fails
         }
       }
 
-      // Always clear local storage and cookies regardless of API success
       localStorage.removeItem("accessToken");
-      console.log("Local storage cleared");
-
-      // Update authentication state
       setIsAuthenticated(false);
-      console.log("Authentication state updated to:", false);
-
-      // Close the menu
       setIsUserMenuOpen(false);
-
-      // Always redirect to home page
       navigate("/");
-      console.log("Navigated to home page");
     } catch (error) {
       console.error("Logout error:", error);
-      // Still try to redirect on error
       navigate("/");
     } finally {
       setIsLoading(false);
-      setIsUserMenuOpen(false);
     }
   };
 
@@ -114,334 +89,57 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-amber-50 shadow-md">
-      <div className="w-full mx-auto px-2 sm:px-4 py-2 flex items-center flex-wrap relative">
-        {/* Mobile Header */}
-        <div className="md:hidden w-full flex items-center justify-between mb-2">
-          {/* Hamburger menu */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="p-2 rounded-md text-gray-700 hover:text-blue-500 focus:outline-none"
-            aria-label="Menu"
-          >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              {isMobileMenuOpen ? (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              ) : (
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              )}
-            </svg>
-          </button>
-
-          {/* Logo in center */}
-          <Link to="/" className="flex items-center">
-            <img src={UNlogo} width={120} alt="UrbanNest Logo" />
-          </Link>
-
-          {/* User menu */}
-          <div className="relative" ref={userMenuRef}>
-            <button
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className={`w-10 h-10 ${
-                isAuthenticated
-                  ? "bg-green-500 hover:bg-green-600"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors`}
-              aria-label="User menu"
-              title={isAuthenticated ? "Logged In" : "Not Logged In"}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </button>
-
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-40">
-                {!isAuthenticated ? (
-                  <>
-                    <Link
-                      to="/login"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Sign Up
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Profile
-                    </Link>
-                    <Link
-                      to="/orders"
-                      className="block px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      My Orders
-                    </Link>
-                    <hr className="my-1 border-gray-200" />
-                    <button
-                      className="w-full text-left px-4 py-2 text-gray-800 hover:bg-blue-100 text-sm"
-                      onClick={handleLogout}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Logging out..." : "Logout"}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
+    <nav className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <div className="flex-shrink-0 flex items-center">
+              <FaTruck className="text-amber-600 text-2xl" />
+              <span className="ml-2 text-2xl font-black text-gray-900">
+                HungerHub
+              </span>
+            </div>
           </div>
-        </div>
-
-        {/* Mobile Search */}
-        <div className="w-full md:hidden mb-2">
-          <form onSubmit={handleSearch} className="relative">
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full py-2 px-4 pr-10 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
+          <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
+            <a
+              href="#"
+              className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-amber-500 text-sm font-medium"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </button>
-          </form>
-        </div>
-
-        {/* Desktop Header */}
-        <div className="hidden md:flex w-full items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src={UNlogo} width={180} alt="UrbanNest Logo" />
-          </Link>
-
-          {/* Search */}
-          <div className="flex-1 max-w-xl mx-4">
-            <form onSubmit={handleSearch} className="relative">
-              <input
-                type="text"
-                placeholder="Search products..."
-                className="w-full py-2 px-4 pr-10 rounded-2xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <button
-                type="submit"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-blue-500"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </form>
-          </div>
-
-          {/* Desktop Nav */}
-          <nav className="flex items-center space-x-5">
-            <Link to="/" className="hover:text-blue-500">
               Home
-            </Link>
-            <Link to="/products" className="hover:text-blue-500">
-              Products
-            </Link>
-            <Link to="/about" className="hover:text-blue-500">
-              About
-            </Link>
-            <Link to="/contact" className="hover:text-blue-500">
-              Contact
-            </Link>
-          </nav>
-
-          {/* User menu */}
-          <div className="relative ml-4" ref={userMenuRef}>
-            <button
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className={`w-10 h-10 ${
-                isAuthenticated
-                  ? "bg-green-500 hover:bg-green-600"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } text-white rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors`}
-              aria-label="User menu"
-              title={isAuthenticated ? "Logged In" : "Not Logged In"}
+            </a>
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
+              Menu
+            </a>
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
+            >
+              How It Works
+            </a>
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
+            >
+              Cities
+            </a>
+            <a
+              href="#"
+              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium"
+            >
+              About
+            </a>
+          </div>
+          <div className="flex items-center">
+            <button className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-full text-sm font-medium transition duration-300">
+              Sign In
             </button>
-
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 py-2 bg-white rounded-md shadow-xl z-40">
-                {!isAuthenticated ? (
-                  <>
-                    <Link
-                      to="/login"
-                      className="block px-4 py-2 hover:bg-blue-100"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="block px-4 py-2 hover:bg-blue-100"
-                    >
-                      Sign Up
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 hover:bg-blue-100"
-                    >
-                      Profile
-                    </Link>
-                    <Link
-                      to="/orders"
-                      className="block px-4 py-2 hover:bg-blue-100"
-                    >
-                      My Orders
-                    </Link>
-                    <hr className="my-1 border-gray-200" />
-                    <button
-                      className="w-full text-left px-4 py-2 hover:bg-blue-100"
-                      onClick={handleLogout}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Logging out..." : "Logout"}
-                    </button>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         </div>
-
-        {/* Mobile Nav Dropdown */}
-        {isMobileMenuOpen && (
-          <div
-            ref={mobileMenuRef}
-            className="absolute top-full left-0 w-full bg-white shadow-lg z-30 md:hidden"
-          >
-            <nav className="px-4 py-2">
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    to="/"
-                    className="block py-2 hover:bg-blue-50 px-2 rounded"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/products"
-                    className="block py-2 hover:bg-blue-50 px-2 rounded"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Products
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/about"
-                    className="block py-2 hover:bg-blue-50 px-2 rounded"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="/contact"
-                    className="block py-2 hover:bg-blue-50 px-2 rounded"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Contact
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        )}
       </div>
-    </header>
+    </nav>
   );
 };
 

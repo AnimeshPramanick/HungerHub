@@ -42,8 +42,8 @@ const Login = () => {
 
       setLoading(false);
 
-      // Redirect to profile dashboard or home page
-      navigate("/profile");
+      // Redirect to home page after successful login
+      navigate("/");
     } catch (err) {
       setLoading(false);
       setError(
