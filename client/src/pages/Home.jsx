@@ -812,6 +812,114 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* About Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            {/* Left Column - Image */}
+            <motion.div
+              className="md:w-1/2 mb-8 md:mb-0"
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <div className="relative">
+                <img
+                  src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&h=600"
+                  alt="Delicious Food Spread"
+                  className="rounded-lg shadow-xl w-full h-auto object-cover"
+                />
+                <div className="absolute -bottom-8 -right-8 bg-yellow-300 p-6 rounded-lg shadow-lg hidden md:block">
+                  <p className="text-3xl font-bold text-red-600">10+</p>
+                  <p className="text-gray-800 font-medium">
+                    Years of Excellence
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Column - Text Content */}
+            <motion.div
+              className="md:w-1/2"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                About HungerHub
+              </h2>
+              <div className="w-20 h-2 bg-red-600 mb-6"></div>
+              <h3 className="text-2xl font-semibold mb-4 text-gray-700">
+                Bringing Delicious Food To Your Doorstep Since 2015
+              </h3>
+              <p className="text-gray-600 mb-6">
+                HungerHub began with a simple mission: to deliver exceptional
+                food experiences to food lovers across the city. What started as
+                a small family-owned restaurant has grown into one of the most
+                beloved food delivery services in the region.
+              </p>
+              <p className="text-gray-600 mb-8">
+                Our team of passionate chefs crafts each dish with care, using
+                only the freshest ingredients sourced from local farmers and
+                suppliers. We pride ourselves on our diverse menu that caters to
+                all tastes and dietary requirements, ensuring everyone can enjoy
+                our culinary creations.
+              </p>
+
+              <div className="grid grid-cols-2 gap-6 mb-8">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mr-4">
+                    <svg
+                      className="w-6 h-6 text-orange-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Expert Team</h4>
+                    <p className="text-sm text-gray-500">
+                      Passionate professionals
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mr-4">
+                    <svg
+                      className="w-6 h-6 text-red-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                        clipRule="evenodd"
+                      ></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold">Quality Food</h4>
+                    <p className="text-sm text-gray-500">
+                      Fresh ingredients always
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                to="/about"
+                className="inline-flex items-center bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-full transition duration-300"
+              >
+                Learn More About Us <FaArrowRight className="ml-2" />
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

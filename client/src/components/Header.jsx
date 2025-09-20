@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FaTruck } from "react-icons/fa";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { FaTruck, FaHeart, FaShoppingCart } from "react-icons/fa";
 import axios from "axios";
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,6 +16,14 @@ const Header = () => {
   const [isLoading, setIsLoading] = useState(false);
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
+
+  // Helper function to check if a path is active (current path starts with the given path)
+  const isActive = (path) => {
+    if (path === "/" || path === "/home") {
+      return location.pathname === "/" || location.pathname === "/home";
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Check authentication state
   useEffect(() => {
@@ -93,12 +102,12 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0 flex items-center">
+            <Link to="/" className="flex-shrink-0 flex items-center">
               <FaTruck className="text-amber-600 text-2xl" />
               <span className="ml-2 text-2xl font-black text-gray-900">
                 HungerHub
               </span>
-            </div>
+            </Link>
           </div>
           {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
@@ -145,70 +154,114 @@ const Header = () => {
           <div className="hidden md:ml-6 md:flex md:items-center md:space-x-8">
             <Link
               to={isAuthenticated ? "/home" : "/"}
-              className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-amber-500 text-sm font-medium"
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                isActive("/") || isActive("/home")
+                  ? "text-gray-900 border-b-2 border-amber-500"
+                  : "text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-amber-500"
+              }`}
             >
               Home
             </Link>
             <Link
               to="/menu"
-              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium hover:border-b-2 hover:border-amber-500"
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                isActive("/menu")
+                  ? "text-gray-900 border-b-2 border-amber-500"
+                  : "text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-amber-500"
+              }`}
             >
               Menu
             </Link>
             <Link
               to="/about"
-              className="text-gray-500 hover:text-gray-900 inline-flex items-center px-1 pt-1 text-sm font-medium hover:border-b-2 hover:border-amber-500"
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                isActive("/about")
+                  ? "text-gray-900 border-b-2 border-amber-500"
+                  : "text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-amber-500"
+              }`}
             >
               About
+            </Link>
+            <Link
+              to="/category"
+              className={`inline-flex items-center px-1 pt-1 text-sm font-medium ${
+                isActive("/category")
+                  ? "text-gray-900 border-b-2 border-amber-500"
+                  : "text-gray-500 hover:text-gray-900 hover:border-b-2 hover:border-amber-500"
+              }`}
+            >
+              Category
             </Link>
           </div>
           <div className="flex items-center">
             {isAuthenticated ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-10 w-10 focus:outline-none transition duration-300"
+              <div className="flex items-center space-x-4">
+                {/* Wishlist Icon */}
+                <Link
+                  to="/wishlist"
+                  className="text-gray-700 hover:text-amber-600 transition duration-300"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6 text-gray-700"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </button>
+                  <FaHeart size={20} />
+                </Link>
 
-                {/* User dropdown menu */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                    <Link
-                      to="/profile"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                {/* Cart Icon */}
+                <Link
+                  to="/cart"
+                  className="text-gray-700 hover:text-amber-600 relative transition duration-300"
+                >
+                  <FaShoppingCart size={20} />
+                  <span className="absolute -top-2 -right-2 bg-amber-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                    0
+                  </span>
+                </Link>
+
+                {/* User Profile */}
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    className="flex items-center justify-center bg-gray-200 hover:bg-gray-300 rounded-full h-10 w-10 focus:outline-none transition duration-300"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6 text-gray-700"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      Profile
-                    </Link>
-                    <Link
-                      to="/orders"
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Orders
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? "Logging out..." : "Sign out"}
-                    </button>
-                  </div>
-                )}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zm-4 7a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* User dropdown menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        to="/orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Orders
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? "Logging out..." : "Sign out"}
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <Link
@@ -227,21 +280,43 @@ const Header = () => {
             <div className="pt-2 pb-3 space-y-1">
               <Link
                 to={isAuthenticated ? "/home" : "/"}
-                className="bg-amber-50 border-amber-500 text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive("/") || isActive("/home")
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700"
+                }`}
               >
                 Home
               </Link>
               <Link
                 to="/menu"
-                className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive("/menu")
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700"
+                }`}
               >
                 Menu
               </Link>
               <Link
                 to="/about"
-                className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive("/about")
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700"
+                }`}
               >
                 About
+              </Link>
+              <Link
+                to="/category"
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive("/category")
+                    ? "bg-amber-50 border-amber-500 text-amber-700"
+                    : "border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700"
+                }`}
+              >
+                Category
               </Link>
 
               {!isAuthenticated && (
@@ -255,6 +330,18 @@ const Header = () => {
 
               {isAuthenticated && (
                 <>
+                  <Link
+                    to="/wishlist"
+                    className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  >
+                    Wishlist
+                  </Link>
+                  <Link
+                    to="/cart"
+                    className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                  >
+                    Cart
+                  </Link>
                   <Link
                     to="/profile"
                     className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"

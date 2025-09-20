@@ -3,29 +3,17 @@ import { FaSearch, FaStar, FaFilter, FaHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
 
 function Menu() {
-  // State for menu items, categories, filters
+  // State for menu items, filters
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState([0, 50]);
   const [sortBy, setSortBy] = useState("recommended");
   const [favorites, setFavorites] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   // Mock data for menu items - in a real app, this would come from an API
   useEffect(() => {
-    // Sample categories
-    const sampleCategories = [
-      { id: "all", name: "All Items" },
-      { id: "breakfast", name: "Breakfast" },
-      { id: "lunch", name: "Lunch" },
-      { id: "dinner", name: "Dinner" },
-      { id: "vegetarian", name: "Vegetarian" },
-      { id: "desserts", name: "Desserts" },
-      { id: "drinks", name: "Beverages" },
-    ];
-
     // Sample menu items
     const sampleMenuItems = [
       {
@@ -132,21 +120,20 @@ function Menu() {
       },
     ];
 
-    setCategories(sampleCategories);
     setMenuItems(sampleMenuItems);
   }, []);
 
-  // Filter menu items based on selected category, search term, and price range
+  // Filter menu items based on selected filter, search term, and price range
   const filteredItems = menuItems.filter((item) => {
-    const matchesCategory =
-      selectedCategory === "all" || item.category === selectedCategory;
+    const matchesFilter =
+      selectedFilter === "all" || item.category === selectedFilter;
     const matchesSearch =
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPrice =
       item.price >= priceRange[0] && item.price <= priceRange[1];
 
-    return matchesCategory && matchesSearch && matchesPrice;
+    return matchesFilter && matchesSearch && matchesPrice;
   });
 
   // Sort items based on selected sort option
@@ -192,27 +179,74 @@ function Menu() {
         </div>
       </div>
 
-      {/* Categories and filters section */}
-      <div className="flex flex-wrap items-center justify-between mb-8">
-        {/* Category tabs */}
-        <div className="flex overflow-x-auto pb-2 mb-4 md:mb-0 space-x-2 w-full md:w-auto">
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap ${
-                selectedCategory === category.id
-                  ? "bg-orange-500 text-white"
-                  : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
+      {/* Predefined filters and sort options in one line */}
+      <div className="flex flex-wrap items-center justify-between mb-6 gap-2">
+        {/* Left side - Predefined filters */}
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => setSelectedFilter("all")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "all"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            All Items
+          </button>
+          <button
+            onClick={() => setSelectedFilter("breakfast")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "breakfast"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Breakfast
+          </button>
+          <button
+            onClick={() => setSelectedFilter("lunch")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "lunch"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Lunch
+          </button>
+          <button
+            onClick={() => setSelectedFilter("dinner")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "dinner"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Dinner
+          </button>
+          <button
+            onClick={() => setSelectedFilter("drinks")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "drinks"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Beverages
+          </button>
+          <button
+            onClick={() => setSelectedFilter("desserts")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${
+              selectedFilter === "desserts"
+                ? "bg-orange-500 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Desserts
+          </button>
         </div>
 
-        {/* Filter button */}
-        <div className="flex items-center space-x-4">
+        {/* Right side - Filter button and sort dropdown */}
+        <div className="flex items-center space-x-4 mt-2 md:mt-0">
           <button
             className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-full hover:bg-gray-200"
             onClick={() => setShowFilters(!showFilters)}
