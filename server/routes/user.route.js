@@ -16,6 +16,7 @@ import {
   verifyOtpController,
   resetPasswordController,
   refreshTokenController,
+  getUserProfileController,
 } from "../controllers/user.controller.js";
 
 import upload from "../middleware/multer.js";
@@ -24,6 +25,7 @@ userRouter.post("/register", registerUserController);
 userRouter.post("/verify-email", verifyEmailController);
 userRouter.post("/login", loginUserController);
 userRouter.get("/logout", auth, logoutUserController);
+userRouter.get("/profile", auth, getUserProfileController);
 userRouter.put(
   "/upload-profile-picture",
   auth,

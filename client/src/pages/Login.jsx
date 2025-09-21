@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -25,25 +25,23 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/login",
-        formData,
-        {
-          withCredentials: true, // Important for cookies to be set properly
-        }
-      );
+      const response = await api.post("/auth/login", formData);
 
       console.log("Login Response:", response.data);
 
       // Store tokens in localStorage for future use
       if (response.data.data.accessToken) {
-        localStorage.setItem("accessToken", response.data.data.accessToken);
+        const token = response.data.data.accessToken;
+        localStorage.setItem("accessToken", token);
+        console.log("Token saved:", token);
+      } else {
+        console.error("No token received from server");
       }
 
       setLoading(false);
 
-      // Redirect to home page after successful login
-      navigate("/home");
+      // Redirect to profile page after successful login
+      navigate("/profile");
     } catch (err) {
       setLoading(false);
       setError(

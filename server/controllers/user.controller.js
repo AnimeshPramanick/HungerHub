@@ -473,3 +473,33 @@ export async function refreshTokenController(req, res) {
       .json({ message: error.message, success: false, error: true }); // Internal Server Error
   }
 }
+
+//get user profile
+export async function getUserProfileController(req, res) {
+  try {
+    const userId = req.userId;
+
+    const user = await UserModel.findById(userId).select(
+      "-password -refresh_token -forgot_password_otp -forgot_password_expiry"
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+        error: true,
+      });
+    }
+
+    return res.status(200).json({
+      message: "User profile fetched successfully",
+      success: true,
+      error: false,
+      data: user,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: error.message, success: false, error: true });
+  }
+}

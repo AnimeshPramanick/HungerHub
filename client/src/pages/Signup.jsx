@@ -7,7 +7,7 @@ import {
   FaPhone,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../utils/api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -54,10 +54,7 @@ const Signup = () => {
       };
 
       // Send registration request to backend
-      const response = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        userData
-      );
+      const response = await api.post("/auth/register", userData);
 
       console.log("Signup Response:", response.data);
 

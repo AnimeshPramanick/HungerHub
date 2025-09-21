@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaTruck, FaHeart, FaShoppingCart } from "react-icons/fa";
-import axios from "axios";
+import api from "../utils/api";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -65,16 +65,7 @@ const Header = () => {
 
       if (token) {
         try {
-          await axios.post(
-            "http://localhost:5000/api/auth/logout",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              withCredentials: true,
-            }
-          );
+          await api.get("/user/logout");
         } catch (apiError) {
           console.error("API logout error:", apiError);
         }
