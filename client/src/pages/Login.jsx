@@ -1,16 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import api from "../utils/api";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Check for messages from protected routes and existing authentication
+  useEffect(() => {
+    // Check if user is already authenticated
+    const checkExistingAuth = async () => {
+      const token = localStorage.getItem("accessToken");
+
+      if (token) {
+        try {
+          const response = await api.get("/user/profile");
+
+          if (response.data?.success) {
+            const userData = response.data.data;
+
+            // User is already authenticated, redirect based on role
+            if (userData.role === "admin") {
+              navigate("/admin", { replace: true });
+            } else {
+              navigate("/profile", { replace: true });
+            }
+            return;
+          }
+        } catch (error) {
+          // Token is invalid, clear it
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("userId");
+          localStorage.removeItem("userName");
+        }
+      }
+
+      // Set error message if coming from protected route
+      if (location.state?.message) {
+        setError(location.state.message);
+      }
+    };
+
+    checkExistingAuth();
+  }, [location.state, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -29,19 +69,35 @@ const Login = () => {
 
       console.log("Login Response:", response.data);
 
-      // Store tokens in localStorage for future use
-      if (response.data.data.accessToken) {
-        const token = response.data.data.accessToken;
-        localStorage.setItem("accessToken", token);
-        console.log("Token saved:", token);
+      if (response.data?.success) {
+        const { accessToken, user } = response.data.data;
+
+        // Store tokens and user info in localStorage
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userId", user._id);
+        localStorage.setItem("userName", user.name);
+
+        console.log("Login successful, user role:", user.role);
+
+        // Determine redirect destination
+        const from = location.state?.from?.pathname;
+        let redirectTo = "/profile"; // Default redirect
+
+        if (user.role === "admin") {
+          // Admin user - redirect to admin dashboard or requested admin page
+          redirectTo = from && from.startsWith("/admin") ? from : "/admin";
+        } else if (from && !from.startsWith("/admin")) {
+          // Regular user trying to access non-admin protected route
+          redirectTo = from;
+        }
+        // If regular user tried to access admin route, redirect to profile
+
+        setLoading(false);
+        navigate(redirectTo, { replace: true });
       } else {
-        console.error("No token received from server");
+        throw new Error(response.data?.message || "Login failed");
       }
-
-      setLoading(false);
-
-      // Redirect to profile page after successful login
-      navigate("/profile");
     } catch (err) {
       setLoading(false);
       setError(
@@ -108,7 +164,11 @@ const Login = () => {
           {/* Error Message */}
           {error && (
             <div
-              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              className={`border px-4 py-3 rounded relative ${
+                location.state?.type === "error"
+                  ? "bg-red-100 border-red-400 text-red-700"
+                  : "bg-red-100 border-red-400 text-red-700"
+              }`}
               role="alert"
             >
               <span className="block sm:inline">{error}</span>

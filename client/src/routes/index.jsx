@@ -3,9 +3,11 @@ import App from "../App";
 import Home from "../pages/Home";
 import Signup from "../pages/Signup";
 import Login from "../pages/Login";
-import ProfileDashboard from "../pages/ProfileDashboard"; // Uncommented this import
+import ProfileDashboard from "../pages/ProfileDashboard";
+import AdminDashboard from "../pages/AdminDashboard";
 import Menu from "../pages/Menu";
 import About from "../pages/About";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -34,7 +36,19 @@ const router = createBrowserRouter([
       },
       {
         path: "profile",
-        element: <ProfileDashboard />,
+        element: (
+          <ProtectedRoute>
+            <ProfileDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute adminOnly={true}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "about",

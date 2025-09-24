@@ -37,9 +37,17 @@ api.interceptors.response.use(
   (error) => {
     // Handle errors like expired tokens, etc.
     if (error.response && error.response.status === 401) {
-      // Handle unauthorized - could redirect to login
-      console.log("Unauthorized access detected");
-      // window.location.href = '/login';
+      // Handle unauthorized - clear tokens and redirect to login
+      console.log("Unauthorized access detected, clearing tokens");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userName");
+
+      // Only redirect if not already on login page
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
