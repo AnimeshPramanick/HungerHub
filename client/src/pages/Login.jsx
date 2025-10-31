@@ -71,10 +71,14 @@ const Login = () => {
 
       if (response.data?.success) {
         const { accessToken, user } = response.data.data;
+        
+        if (!user || !accessToken) {
+          throw new Error("Invalid response from server");
+        }
 
         // Store tokens and user info in localStorage
         localStorage.setItem("accessToken", accessToken);
-        localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userRole", user.role || "user");
         localStorage.setItem("userId", user._id);
         localStorage.setItem("userName", user.name);
 

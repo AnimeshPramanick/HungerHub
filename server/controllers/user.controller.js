@@ -44,21 +44,44 @@ export async function registerUserController(req, res) {
 
     const verifyEmailUrl = `${process.env.CLIENT_URL}/verify-email?code=${savedUser._id}`;
 
-    const verifyEmail = await sendEmail({
-      sendTo: email,
-      subject: "Welcome to HungerHub!",
-      html: verifyEmailTemplate({
-        name,
-        url: verifyEmailUrl,
-      }),
-    });
+    // Automatically verify the email
+    await UserModel.updateOne(
+      { _id: savedUser._id },
+      { verify_email: true, status: "active" }
+    );
+
+    // Generate tokens
+    const accessToken = generateAccessToken(savedUser._id);
+    const refreshToken = await generateRefreshToken(savedUser._id);
+
+    // Set cookies
+    const cookiesOptions = {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    };
+    res.cookie("accessToken", accessToken, cookiesOptions);
+    res.cookie("refreshToken", refreshToken, cookiesOptions);
+
+    // Remove sensitive data
+    const userWithoutSensitive = {
+      _id: savedUser._id,
+      name: savedUser.name,
+      email: savedUser.email,
+      role: savedUser.role || "user",
+      mobile: savedUser.mobile,
+      status: savedUser.status
+    };
 
     return res.status(200).json({
-      message:
-        "Registration successful! Please check your email to verify your account.",
+      message: "Registration successful!",
       error: false,
       success: true,
-      data: savedUser,
+      data: {
+        user: userWithoutSensitive,
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
     res
@@ -119,6 +142,14 @@ export async function loginUserController(req, res) {
       });
     }
 
+    if (!user.verify_email) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in.",
+        success: false,
+        error: true,
+      });
+    }
+
     if (user.status !== "active") {
       return res.status(403).json({
         message: "Your account is not active. Please contact support.",
@@ -147,11 +178,26 @@ export async function loginUserController(req, res) {
     res.cookie("accessToken", accessToken, cookiesOptions);
     res.cookie("refreshToken", refreshToken, cookiesOptions);
 
+    // Remove sensitive data from user object
+    const userWithoutSensitive = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      mobile: user.mobile,
+      status: user.status
+    };
+
     return res.status(200).json({
       message: "Login successful",
       success: true,
       error: false,
-      data: { accessToken, refreshToken },
+      data: { 
+        accessToken,
+        refreshToken,
+        user: userWithoutSensitive
+      },
     });
   } catch (error) {
     return res

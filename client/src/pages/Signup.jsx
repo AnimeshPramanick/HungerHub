@@ -58,16 +58,27 @@ const Signup = () => {
 
       console.log("Signup Response:", response.data);
 
-      // Redirect to email verification or login page
-      setLoading(false);
-      alert("Signup Successful! Please verify your email.");
-      navigate("/login");
-    } catch (err) {
+      if (response.data?.success) {
+        const { accessToken, user } = response.data.data;
+
+        // Store tokens and user info in localStorage
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("userRole", user.role || "user");
+        localStorage.setItem("userId", user._id);
+        localStorage.setItem("userName", user.name);
+
+        setLoading(false);
+        // Redirect to home page after successful signup and auto-login
+        navigate("/");
+      } else {
+        throw new Error(response.data?.message || "Registration failed");
+      }
+    } catch (error) {
       setLoading(false);
       setError(
-        err.response?.data?.message || "Registration failed. Please try again."
+        error?.response?.data?.message || error.message || "Registration failed. Please try again."
       );
-      console.error("Signup Error:", err);
+      console.error("Signup Error:", error);
     }
   };
 
