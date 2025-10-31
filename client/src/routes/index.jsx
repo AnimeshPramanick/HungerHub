@@ -8,6 +8,7 @@ import AdminDashboard from "../pages/AdminDashboard";
 import Menu from "../pages/Menu";
 import About from "../pages/About";
 import ProtectedRoute from "../components/ProtectedRoute";
+import AdminPage from "../pages/AdminPage"
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute adminOnly={true}>
             <AdminDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "admin1",
+        element: (
+          <ProtectedRoute adminOnly={true}>
+            <AdminPage />
           </ProtectedRoute>
         ),
       },
