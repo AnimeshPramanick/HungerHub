@@ -2,6 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import {
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import {
   FaUsers,
   FaShoppingCart,
   FaUtensils,
@@ -30,6 +41,8 @@ import {
   FaArrowDown,
   FaBell,
   FaCheckCircle,
+  FaEllipsisV,
+  FaReply,
 } from "react-icons/fa";
 
 const AdminDashboard = () => {
@@ -53,6 +66,37 @@ const AdminDashboard = () => {
     activeUsers: 0,
     newUsersToday: 0,
   });
+
+  // Analytics Data
+  const [revenueData] = useState([
+    { month: "Jan", revenue: 8000 },
+    { month: "Feb", revenue: 9500 },
+    { month: "Mar", revenue: 10000 },
+    { month: "Apr", revenue: 12000 },
+    { month: "May", revenue: 14500 },
+    { month: "Jun", revenue: 16000 },
+    { month: "Jul", revenue: 18500 },
+    { month: "Aug", revenue: 21000 },
+    { month: "Sep", revenue: 23500 },
+    { month: "Oct", revenue: 25000 },
+    { month: "Nov", revenue: 27500 },
+    { month: "Dec", revenue: 30000 },
+  ]);
+
+  const [userGrowthData] = useState([
+    { month: "Jan", users: 300 },
+    { month: "Feb", users: 380 },
+    { month: "Mar", users: 450 },
+    { month: "Apr", users: 520 },
+    { month: "May", users: 600 },
+    { month: "Jun", users: 680 },
+    { month: "Jul", users: 720 },
+    { month: "Aug", users: 800 },
+    { month: "Sep", users: 850 },
+    { month: "Oct", users: 920 },
+    { month: "Nov", users: 980 },
+    { month: "Dec", users: 1050 },
+  ]);
 
   // Data States for different sections
   const [users, setUsers] = useState([]);
@@ -727,34 +771,687 @@ const AdminDashboard = () => {
         return <ProductsTab />;
       case "categories":
         return (
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">
-              Categories Management - Coming Soon
-            </h3>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Food Categories</h2>
+                <p className="text-gray-600 mt-1">Manage your restaurant's menu categories</p>
+              </div>
+              <button className="bg-orange-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-orange-600 transition-colors">
+                <FaPlus size={16} />
+                <span>New Category</span>
+              </button>
+            </div>
+
+            {/* Search and Filter Bar */}
+            <div className="bg-white p-4 rounded-lg shadow-sm flex flex-wrap gap-4 items-center justify-between">
+              <div className="relative flex-1 min-w-[200px]">
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <input
+                  type="text"
+                  placeholder="Search categories..."
+                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <select className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 text-gray-700">
+                  <option value="">Sort by</option>
+                  <option value="name">Name</option>
+                  <option value="products">Products</option>
+                  <option value="status">Status</option>
+                </select>
+                <button className="px-3 py-2 border rounded-lg hover:bg-gray-50 text-gray-700 flex items-center gap-2">
+                  <FaFilter size={14} />
+                  <span>Filters</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Category Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {categories.map((category) => (
+                <div key={category.id} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className={`p-3 rounded-lg ${
+                          category.status === 'active' ? 'bg-orange-100' : 'bg-gray-100'
+                        }`}>
+                          <FaUtensils className={`${
+                            category.status === 'active' ? 'text-orange-600' : 'text-gray-600'
+                          }`} size={20} />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-lg text-gray-900">{category.name}</h3>
+                          <p className="text-sm text-gray-500">{category.productCount} items</p>
+                        </div>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-sm ${
+                        category.status === 'active' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {category.status}
+                      </div>
+                    </div>
+                    
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-sm text-gray-600">Available</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {Math.floor(category.productCount * 0.8)}
+                        </p>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-sm text-gray-600">Out of Stock</p>
+                        <p className="text-lg font-semibold text-gray-900">
+                          {Math.ceil(category.productCount * 0.2)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center justify-between pt-4 border-t">
+                      <div className="flex items-center space-x-2">
+                        <button className="text-gray-700 hover:text-orange-600 transition-colors p-2">
+                          <FaEdit size={18} />
+                        </button>
+                        <button className="text-gray-700 hover:text-red-600 transition-colors p-2">
+                          <FaTrash size={18} />
+                        </button>
+                      </div>
+                      <button className="flex items-center space-x-2 text-orange-600 hover:text-orange-700 transition-colors">
+                        <span className="text-sm font-medium">View Products</span>
+                        <FaArrowUp className="rotate-90" size={12} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Add Category Card */}
+              <div className="bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 hover:border-orange-500 transition-colors cursor-pointer p-6 flex flex-col items-center justify-center min-h-[280px]">
+                <div className="p-3 rounded-full bg-orange-100 mb-4">
+                  <FaPlus className="text-orange-600" size={24} />
+                </div>
+                <h3 className="font-medium text-gray-900">Add New Category</h3>
+                <p className="text-sm text-gray-500 text-center mt-2">
+                  Create a new category to organize your menu items
+                </p>
+              </div>
+            </div>
           </div>
         );
       case "reviews":
         return (
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">
-              Reviews Management - Coming Soon
-            </h3>
+          <div className="space-y-6">
+            {/* Header with Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Average Rating</p>
+                    <div className="flex items-center mt-2">
+                      <span className="text-3xl font-bold text-gray-900">4.8</span>
+                      <div className="flex items-center ml-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <FaStar
+                            key={star}
+                            className="text-yellow-500"
+                            size={16}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-full bg-yellow-100">
+                    <FaStar className="text-yellow-600" size={24} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Reviews</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">1,248</p>
+                  </div>
+                  <div className="p-3 rounded-full bg-blue-100">
+                    <FaComments className="text-blue-600" size={24} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Response Rate</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">92%</p>
+                  </div>
+                  <div className="p-3 rounded-full bg-green-100">
+                    <FaCheckCircle className="text-green-600" size={24} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">New Reviews</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-2">24</p>
+                  </div>
+                  <div className="p-3 rounded-full bg-purple-100">
+                    <FaBell className="text-purple-600" size={24} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Rating Distribution */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Rating Distribution</h3>
+              <div className="space-y-3">
+                {[5, 4, 3, 2, 1].map((rating) => (
+                  <div key={rating} className="flex items-center">
+                    <div className="w-12 text-sm text-gray-600">{rating} stars</div>
+                    <div className="flex-1 mx-4 h-4 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className={`h-full ${
+                          rating >= 4 ? 'bg-green-500' : 
+                          rating === 3 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                        style={{ 
+                          width: `${
+                            rating === 5 ? '60%' : 
+                            rating === 4 ? '25%' : 
+                            rating === 3 ? '10%' : 
+                            rating === 2 ? '3%' : '2%'
+                          }`
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-sm text-gray-600 text-right">
+                      {rating === 5 ? '60%' : 
+                       rating === 4 ? '25%' : 
+                       rating === 3 ? '10%' : 
+                       rating === 2 ? '3%' : '2%'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Reviews List */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Recent Reviews</h3>
+                <div className="flex items-center space-x-4">
+                  <select className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option>All Ratings</option>
+                    <option>5 Stars</option>
+                    <option>4 Stars</option>
+                    <option>3 Stars</option>
+                    <option>2 Stars</option>
+                    <option>1 Star</option>
+                  </select>
+                  <select className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    <option>Most Recent</option>
+                    <option>Highest Rated</option>
+                    <option>Lowest Rated</option>
+                    <option>Needs Response</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                {/* Sample Reviews */}
+                {[
+                  {
+                    id: 1,
+                    user: "John Doe",
+                    rating: 5,
+                    date: "2024-10-31",
+                    content: "Amazing food and great service! The pizza was perfectly cooked and arrived hot.",
+                    product: "Margherita Pizza",
+                    response: "Thank you for your wonderful feedback! We're glad you enjoyed your meal.",
+                    hasResponse: true
+                  },
+                  {
+                    id: 2,
+                    user: "Jane Smith",
+                    rating: 4,
+                    date: "2024-10-30",
+                    content: "Good food but delivery took a bit longer than expected.",
+                    product: "Chicken Burger",
+                    hasResponse: false
+                  },
+                  {
+                    id: 3,
+                    user: "Mike Johnson",
+                    rating: 3,
+                    date: "2024-10-29",
+                    content: "Average experience. The food was okay but nothing special.",
+                    product: "Caesar Salad",
+                    hasResponse: false
+                  }
+                ].map((review) => (
+                  <div key={review.id} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-600 font-medium">
+                              {review.user.charAt(0)}
+                            </span>
+                          </div>
+                          <div className="ml-3">
+                            <p className="font-medium text-gray-900">{review.user}</p>
+                            <div className="flex items-center mt-1">
+                              {[...Array(5)].map((_, index) => (
+                                <FaStar
+                                  key={index}
+                                  className={index < review.rating ? "text-yellow-500" : "text-gray-300"}
+                                  size={14}
+                                />
+                              ))}
+                              <span className="ml-2 text-sm text-gray-500">
+                                {review.date}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          <p className="text-gray-600">{review.content}</p>
+                          <p className="text-sm text-gray-500 mt-2">
+                            Product: {review.product}
+                          </p>
+                        </div>
+                        {review.response && (
+                          <div className="mt-3 pl-4 border-l-2 border-gray-200">
+                            <p className="text-sm text-gray-600">
+                              <span className="font-medium">Response: </span>
+                              {review.response}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {!review.hasResponse && (
+                          <button className="text-blue-600 hover:text-blue-700">
+                            <FaReply size={16} />
+                          </button>
+                        )}
+                        <button className="text-gray-600 hover:text-gray-700">
+                          <FaEllipsisV size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Pagination */}
+              <div className="flex items-center justify-between mt-6">
+                <p className="text-sm text-gray-600">
+                  Showing 1-3 of 1,248 reviews
+                </p>
+                <div className="flex items-center space-x-2">
+                  <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Previous
+                  </button>
+                  <button className="px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         );
       case "analytics":
         return (
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">
-              Analytics Dashboard - Coming Soon
-            </h3>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Analytics Dashboard</h2>
+              <div className="flex items-center space-x-3">
+                <select className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                  <option>Last 12 Months</option>
+                  <option>Last 6 Months</option>
+                  <option>Last 3 Months</option>
+                  <option>This Month</option>
+                </select>
+                <button className="flex items-center space-x-2 px-3 py-2 border rounded-lg hover:bg-gray-50">
+                  <FaDownload size={14} />
+                  <span>Export Data</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Revenue Graph */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">Revenue Growth</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Total Revenue:</span>
+                  <span className="text-lg font-semibold text-green-600">
+                    ${revenueData.reduce((sum, item) => sum + item.revenue, 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={400}>
+                <AreaChart data={revenueData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="month" />
+                  <YAxis 
+                    tickFormatter={(value) => `$${value.toLocaleString()}`}
+                  />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip 
+                    formatter={(value) => [`$${value.toLocaleString()}`, "Revenue"]}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#3B82F6"
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* User Growth Graph */}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900">User Growth</h3>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Total Users:</span>
+                  <span className="text-lg font-semibold text-blue-600">
+                    {userGrowthData[userGrowthData.length - 1].users.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={userGrowthData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="users" 
+                    stroke="#10B981" 
+                    strokeWidth={2}
+                    dot={{ fill: '#10B981' }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <FaChartBar className="text-blue-600" size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Revenue Growth</p>
+                    <p className="text-2xl font-bold text-gray-900">+275%</p>
+                    <p className="text-sm text-green-600">vs. Last Year</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <FaUsers className="text-green-600" size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">User Growth</p>
+                    <p className="text-2xl font-bold text-gray-900">+250%</p>
+                    <p className="text-sm text-green-600">vs. Last Year</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-yellow-100 rounded-full">
+                    <FaShoppingCart className="text-yellow-600" size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Order Growth</p>
+                    <p className="text-2xl font-bold text-gray-900">+180%</p>
+                    <p className="text-sm text-green-600">vs. Last Year</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <FaMoneyBillWave className="text-purple-600" size={24} />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Avg. Order Value</p>
+                    <p className="text-2xl font-bold text-gray-900">$42.50</p>
+                    <p className="text-sm text-green-600">+15% vs. Last Year</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         );
       case "settings":
         return (
-          <div className="p-6 bg-white rounded-lg shadow-md">
-            <h3 className="text-lg font-semibold">
-              Admin Settings - Coming Soon
-            </h3>
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Admin Settings</h2>
+                <p className="text-gray-600 mt-1">Manage your account and system preferences</p>
+              </div>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                Save Changes
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Profile Settings */}
+              <div className="lg:col-span-1">
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Profile Settings</h3>
+                  <div className="space-y-4">
+                    <div className="flex flex-col items-center">
+                      <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center mb-4">
+                        <FaUserShield className="text-blue-600" size={40} />
+                      </div>
+                      <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                        Change Avatar
+                      </button>
+                    </div>
+                    <div className="space-y-4 mt-6">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          defaultValue={adminProfile?.name || ""}
+                          placeholder="Enter your full name"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          defaultValue={adminProfile?.email || ""}
+                          placeholder="Enter your email"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Settings */}
+              <div className="lg:col-span-2 space-y-6">
+                {/* Security Settings */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Current Password
+                      </label>
+                      <input
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter current password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        New Password
+                      </label>
+                      <input
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter new password"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirm New Password
+                      </label>
+                      <input
+                        type="password"
+                        className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Confirm new password"
+                      />
+                    </div>
+                    <div className="pt-4">
+                      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Notification Settings */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-800">New Order Notifications</p>
+                        <p className="text-sm text-gray-500">Receive alerts for new orders</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-800">Review Notifications</p>
+                        <p className="text-sm text-gray-500">Get notified about new reviews</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-800">Low Stock Alerts</p>
+                        <p className="text-sm text-gray-500">Alerts when products are running low</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                {/* System Settings */}
+                <div className="bg-white rounded-lg shadow-sm p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">System Preferences</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Time Zone
+                      </label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>UTC+5:30 (IST - Indian Standard Time)</option>
+                        <option>UTC-5 (Eastern Time)</option>
+                        <option>UTC-6 (Central Time)</option>
+                        <option>UTC-7 (Mountain Time)</option>
+                        <option>UTC-8 (Pacific Time)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Currency Display
+                      </label>
+                      <select className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option>INR (₹)</option>
+                        <option>USD ($)</option>
+                        <option>EUR (€)</option>
+                        <option>GBP (£)</option>
+                        <option>JPY (¥)</option>
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between pt-2">
+                      <div>
+                        <p className="font-medium text-gray-800">Dark Mode</p>
+                        <p className="text-sm text-gray-500">Enable dark mode theme</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" className="sr-only peer" />
+                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="bg-red-50 rounded-lg p-6 border border-red-200">
+              <h3 className="text-lg font-semibold text-red-700 mb-4">Danger Zone</h3>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-red-700">Deactivate Account</p>
+                    <p className="text-sm text-red-600">Temporarily disable your admin account</p>
+                  </div>
+                  <button className="px-4 py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">
+                    Deactivate
+                  </button>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-red-200">
+                  <div>
+                    <p className="font-medium text-red-700">Delete Account</p>
+                    <p className="text-sm text-red-600">Permanently delete your admin account and all data</p>
+                  </div>
+                  <button className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                    Delete Account
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         );
       default:
