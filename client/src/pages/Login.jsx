@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { FaEnvelope, FaLock, FaSignInAlt } from "react-icons/fa";
+import { FaEnvelope, FaLock, FaSignInAlt, FaEye, FaEyeSlash } from "react-icons/fa";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import "../components/auth.css";
 import api from "../utils/api";
 
 const Login = () => {
@@ -12,6 +13,7 @@ const Login = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Check for messages from protected routes and existing authentication
   useEffect(() => {
@@ -86,16 +88,16 @@ const Login = () => {
 
         // Determine redirect destination
         const from = location.state?.from?.pathname;
-        let redirectTo = "/profile"; // Default redirect
+        let redirectTo = "/"; // Default redirect to Home page
 
         if (user.role === "admin") {
           // Admin user - redirect to admin dashboard or requested admin page
           redirectTo = from && from.startsWith("/admin") ? from : "/admin";
         } else if (from && !from.startsWith("/admin")) {
-          // Regular user trying to access non-admin protected route
+          // If user was trying to access a specific page, redirect there
           redirectTo = from;
         }
-        // If regular user tried to access admin route, redirect to profile
+        // If regular user tried to access admin route, redirect to home
 
         setLoading(false);
         navigate(redirectTo, { replace: true });
@@ -113,8 +115,25 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-300 flex items-center justify-center px-4">
-      <div className="bg-white shadow-2xl rounded-2xl max-w-md w-full p-8">
+    <div className="auth-container">
+      {/* Food emojis as decorative elements */}
+      <span className="floating-element" style={{ top: '15%', left: '15%', fontSize: '7rem', animationDelay: '0s' }}>🍕</span>
+      <span className="floating-element" style={{ top: '75%', left: '20%', fontSize: '6.5rem', animationDelay: '1.5s' }}>🍔</span>
+      <span className="floating-element" style={{ top: '35%', right: '20%', fontSize: '7rem', animationDelay: '2.5s' }}>🍜</span>
+      <span className="floating-element" style={{ top: '65%', right: '15%', fontSize: '6.5rem', animationDelay: '3.5s' }}>🍱</span>
+      <span className="floating-element" style={{ top: '25%', left: '45%', fontSize: '7rem', animationDelay: '4s' }}>🥗</span>
+      <span className="floating-element" style={{ bottom: '25%', right: '25%', fontSize: '7rem', animationDelay: '5s' }}>🍲</span>
+      <span className="floating-element" style={{ top: '45%', left: '10%', fontSize: '6.5rem', animationDelay: '2s' }}>🌮</span>
+      <span className="floating-element" style={{ top: '85%', right: '35%', fontSize: '7rem', animationDelay: '3s' }}>🥪</span>
+      <span className="floating-element" style={{ top: '10%', right: '30%', fontSize: '6.5rem', animationDelay: '4.5s' }}>🍣</span>
+      <span className="floating-element" style={{ top: '50%', right: '40%', fontSize: '7rem', animationDelay: '1s' }}>🥘</span>
+      <span className="floating-element" style={{ top: '30%', left: '30%', fontSize: '6.5rem', animationDelay: '2.8s' }}>🍝</span>
+      <span className="floating-element" style={{ bottom: '15%', left: '40%', fontSize: '7rem', animationDelay: '3.2s' }}>🥐</span>
+      <span className="floating-element" style={{ top: '5%', left: '35%', fontSize: '6.5rem', animationDelay: '4.2s' }}>🍦</span>
+      <span className="floating-element" style={{ bottom: '35%', right: '10%', fontSize: '6.5rem', animationDelay: '5.5s' }}>🍰</span>
+      
+      {/* Form Container */}
+      <div className="auth-form-container">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           Welcome Back
         </h2>
@@ -144,14 +163,21 @@ const Login = () => {
             <div className="relative">
               <FaLock className="absolute left-3 top-3 text-gray-400" />
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
                 placeholder="********"
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none"
+                className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:outline-none"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
             </div>
           </div>
 

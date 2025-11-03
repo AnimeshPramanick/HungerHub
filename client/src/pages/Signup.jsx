@@ -6,6 +6,7 @@ import {
   FaArrowRight,
   FaPhone,
 } from "react-icons/fa";
+import "../components/FloatingImages.css";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
@@ -83,8 +84,32 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-yellow-300 flex items-center justify-center px-4">
-      <div className="bg-white shadow-2xl rounded-2xl max-w-md w-full p-8">
+    <div className="min-h-screen flex items-center justify-center px-4">
+      {/* Background with overlay */}
+      <div className="fixed inset-0 z-0 auth-background overflow-hidden">
+        <div className="absolute inset-0">
+          {/* Food emojis as decorative elements */}
+          <span className="floating-element" style={{ top: '15%', left: '15%', fontSize: '7rem', animationDelay: '0s' }}>🍕</span>
+          <span className="floating-element" style={{ top: '75%', left: '20%', fontSize: '6.5rem', animationDelay: '1.5s' }}>🍔</span>
+          <span className="floating-element" style={{ top: '35%', right: '20%', fontSize: '7rem', animationDelay: '2.5s' }}>🍜</span>
+          <span className="floating-element" style={{ top: '65%', right: '15%', fontSize: '6.5rem', animationDelay: '3.5s' }}>🍱</span>
+          <span className="floating-element" style={{ top: '25%', left: '45%', fontSize: '7rem', animationDelay: '4s' }}>🥗</span>
+          <span className="floating-element" style={{ bottom: '25%', right: '25%', fontSize: '7rem', animationDelay: '5s' }}>🍲</span>
+          
+          {/* Additional food emojis */}
+          <span className="floating-element" style={{ top: '45%', left: '10%', fontSize: '6.5rem', animationDelay: '2s' }}>🌮</span>
+          <span className="floating-element" style={{ top: '85%', right: '35%', fontSize: '7rem', animationDelay: '3s' }}>🥪</span>
+          <span className="floating-element" style={{ top: '10%', right: '30%', fontSize: '6.5rem', animationDelay: '4.5s' }}>🍣</span>
+          <span className="floating-element" style={{ top: '50%', right: '40%', fontSize: '7rem', animationDelay: '1s' }}>🥘</span>
+          <span className="floating-element" style={{ top: '30%', left: '30%', fontSize: '6.5rem', animationDelay: '2.8s' }}>🍝</span>
+          <span className="floating-element" style={{ bottom: '15%', left: '40%', fontSize: '7rem', animationDelay: '3.2s' }}>🥐</span>
+          <span className="floating-element" style={{ top: '5%', left: '35%', fontSize: '6.5rem', animationDelay: '4.2s' }}>🍦</span>
+          <span className="floating-element" style={{ bottom: '35%', right: '10%', fontSize: '6.5rem', animationDelay: '5.5s' }}>🍰</span>
+        </div>
+      </div>
+      
+      {/* Form Container */}
+      <div className="bg-white shadow-xl rounded-2xl max-w-md w-full p-8 relative z-10">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
           Create an Account
         </h2>

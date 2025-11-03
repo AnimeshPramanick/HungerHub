@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import AdminDashboard from "./AdminPage";
 
 export default function Navbar() {
   return (

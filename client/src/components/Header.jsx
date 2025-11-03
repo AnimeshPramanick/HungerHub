@@ -13,6 +13,7 @@ const Header = () => {
     const token = localStorage.getItem("accessToken");
     return !!token;
   });
+  const [userRole, setUserRole] = useState(localStorage.getItem("userRole"));
   const [isLoading, setIsLoading] = useState(false);
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
@@ -25,15 +26,33 @@ const Header = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Check authentication state
+  // Check authentication state and user role
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem("accessToken");
-      setIsAuthenticated(!!token);
+      if (token) {
+        try {
+          const response = await api.get("/user/profile");
+          if (response.data?.success) {
+            const userData = response.data.data;
+            setIsAuthenticated(true);
+            setUserRole(userData.role);
+            localStorage.setItem("userRole", userData.role); // Update role in localStorage
+          } else {
+            handleLogout();
+          }
+        } catch (error) {
+          console.error("Auth check error:", error);
+          handleLogout();
+        }
+      } else {
+        setIsAuthenticated(false);
+        setUserRole(null);
+      }
     };
 
     checkAuth();
-    const authCheckInterval = setInterval(checkAuth, 2000);
+    const authCheckInterval = setInterval(checkAuth, 5000);
     return () => clearInterval(authCheckInterval);
   }, []);
 
@@ -71,13 +90,22 @@ const Header = () => {
         }
       }
 
+      // Clear all auth-related data
       localStorage.removeItem("accessToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("userId");
+      localStorage.removeItem("userName");
+
+      // Reset state
       setIsAuthenticated(false);
+      setUserRole(null);
       setIsUserMenuOpen(false);
-      navigate("/");
+
+      // Force a page refresh to clear any cached state
+      window.location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
-      navigate("/");
+      window.location.href = "/";
     } finally {
       setIsLoading(false);
     }
@@ -231,6 +259,26 @@ const Header = () => {
                   {/* User dropdown menu */}
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                      {userRole === "admin" && (
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                        >
+                          <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className="h-5 w-5 mr-2 text-amber-600" 
+                            viewBox="0 0 20 20" 
+                            fill="currentColor"
+                          >
+                            <path 
+                              fillRule="evenodd" 
+                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" 
+                              clipRule="evenodd" 
+                            />
+                          </svg>
+                          Admin
+                        </Link>
+                      )}
                       <Link
                         to="/profile"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -321,6 +369,14 @@ const Header = () => {
 
               {isAuthenticated && (
                 <>
+                  {userRole === "admin" && (
+                    <Link
+                      to="/admin"
+                      className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                    >
+                      Admin
+                    </Link>
+                  )}
                   <Link
                     to="/wishlist"
                     className="border-transparent text-gray-600 hover:bg-gray-50 hover:border-amber-300 hover:text-amber-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
