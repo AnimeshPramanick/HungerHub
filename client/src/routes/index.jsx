@@ -4,9 +4,12 @@ import Home from "../pages/Home";
 import Signup from "../pages/Signup";
 import Login from "../pages/Login";
 import ProfileDashboard from "../pages/ProfileDashboard";
+import Cart from "../pages/Cart";
+import WishList from "../pages/WishList";
 import AdminDashboard from "../pages/AdminDashboard";
 import Menu from "../pages/Menu";
 import About from "../pages/About";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 import AdminPage from "../pages/AdminPage"
 
@@ -23,6 +26,9 @@ const router = createBrowserRouter([
         path: "home",
         element: <Home />,
       },
+      
+      
+        
       {
         path: "menu",
         element: <Menu />,
@@ -40,6 +46,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProfileDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cart",
+        element: (
+          <ProtectedRoute>
+            <Cart />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "wishlist",
+        element: (
+          <ProtectedRoute>
+            <WishList />
           </ProtectedRoute>
         ),
       },

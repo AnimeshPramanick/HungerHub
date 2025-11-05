@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { FaSearch, FaStar, FaFilter, FaHeart } from "react-icons/fa";
 import { motion } from "framer-motion";
+import { useSearchParams, Link } from "react-router-dom";
+import "../components/FloatingImages.css";
 
 function Menu() {
+  const [searchParams] = useSearchParams();
+  
   // State for menu items, filters
   const [menuItems, setMenuItems] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [priceRange, setPriceRange] = useState([0, 50]);
   const [sortBy, setSortBy] = useState("recommended");
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    return savedFavorites ? JSON.parse(savedFavorites) : [];
+  });
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState("all");
+  const [selectedFilter, setSelectedFilter] = useState(() => {
+    const categoryFromUrl = searchParams.get("category");
+    return categoryFromUrl || "all";
+  });
 
   // Mock data for menu items - in a real app, this would come from an API
   useEffect(() => {
@@ -145,18 +155,87 @@ function Menu() {
     return 0;
   });
 
+  // Set up favorites listener
+  useEffect(() => {
+    const handleFavoritesUpdate = (event) => {
+      setFavorites(event.detail.favorites);
+    };
+    
+    window.addEventListener('favoritesUpdated', handleFavoritesUpdate);
+    return () => window.removeEventListener('favoritesUpdated', handleFavoritesUpdate);
+  }, []);
+
   // Toggle favorite status
-  const toggleFavorite = (id) => {
-    if (favorites.includes(id)) {
-      setFavorites(favorites.filter((favId) => favId !== id));
-    } else {
-      setFavorites([...favorites, id]);
+  const toggleFavorite = (itemId) => {
+    try {
+      const isCurrentlyFavorite = favorites.includes(itemId);
+      const newFavorites = isCurrentlyFavorite 
+        ? favorites.filter(id => id !== itemId)
+        : [...favorites, itemId];
+      
+      setFavorites(newFavorites);
+      localStorage.setItem('favorites', JSON.stringify(newFavorites));
+      
+      // Dispatch custom event for other components to update
+      const event = new CustomEvent('favoritesUpdated', { 
+        detail: { favorites: newFavorites } 
+      });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error('Error updating favorites:', error);
+    }
+  };
+
+  // Add item to cart (uses localStorage)
+  const addToCart = (item) => {
+    try {
+      const raw = localStorage.getItem("cart");
+      const cart = raw ? JSON.parse(raw) : [];
+
+      const existingIndex = cart.findIndex((ci) => ci.id === item.id);
+      if (existingIndex !== -1) {
+        // increment quantity
+        cart[existingIndex].quantity = (cart[existingIndex].quantity || 1) + 1;
+      } else {
+        cart.push({ ...item, quantity: 1 });
+      }
+
+      localStorage.setItem("cart", JSON.stringify(cart));
+      // notify other parts of the app (Header) that cart changed
+      window.dispatchEvent(new Event("cartUpdated"));
+      // simple user feedback
+      // you can replace this with a toast later
+      console.log(`${item.name} added to cart`);
+    } catch (err) {
+      console.error("Failed to add to cart:", err);
     }
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Hero section */}
+    <div className="min-h-screen relative">
+      {/* Background with overlay */}
+      <div className="fixed inset-0 z-0 auth-background overflow-hidden">
+        <div className="absolute inset-0">
+          <span className="floating-element" style={{ top: '15%', left: '15%', fontSize: '7rem', animationDelay: '0s' }}>🍕</span>
+          <span className="floating-element" style={{ top: '75%', left: '20%', fontSize: '6.5rem', animationDelay: '1.5s' }}>🍔</span>
+          <span className="floating-element" style={{ top: '35%', right: '20%', fontSize: '7rem', animationDelay: '2.5s' }}>🍜</span>
+          <span className="floating-element" style={{ top: '65%', right: '15%', fontSize: '6.5rem', animationDelay: '3.5s' }}>🍱</span>
+          <span className="floating-element" style={{ top: '25%', left: '45%', fontSize: '7rem', animationDelay: '4s' }}>🥗</span>
+          <span className="floating-element" style={{ bottom: '25%', right: '25%', fontSize: '7rem', animationDelay: '5s' }}>🍲</span>
+          <span className="floating-element" style={{ top: '45%', left: '10%', fontSize: '6.5rem', animationDelay: '2s' }}>🌮</span>
+          <span className="floating-element" style={{ top: '85%', right: '35%', fontSize: '7rem', animationDelay: '3s' }}>🥪</span>
+          <span className="floating-element" style={{ top: '10%', right: '30%', fontSize: '6.5rem', animationDelay: '4.5s' }}>🍣</span>
+          <span className="floating-element" style={{ top: '50%', right: '40%', fontSize: '7rem', animationDelay: '1s' }}>🥘</span>
+          <span className="floating-element" style={{ top: '30%', left: '30%', fontSize: '6.5rem', animationDelay: '2.8s' }}>🍝</span>
+          <span className="floating-element" style={{ bottom: '15%', left: '40%', fontSize: '7rem', animationDelay: '3.2s' }}>🥐</span>
+          <span className="floating-element" style={{ top: '5%', left: '35%', fontSize: '6.5rem', animationDelay: '4.2s' }}>🍦</span>
+          <span className="floating-element" style={{ bottom: '35%', right: '10%', fontSize: '6.5rem', animationDelay: '5.5s' }}>🍰</span>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Hero section */}
       <div className="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl p-8 mb-8 text-white">
         <h1 className="text-4xl font-bold mb-2">Explore Our Menu</h1>
         <p className="text-lg mb-6">
@@ -193,46 +272,51 @@ function Menu() {
           >
             All Items
           </button>
-          <button
-            onClick={() => setSelectedFilter("breakfast")}
-            className={`px-4 py-2 rounded-full whitespace-nowrap ${
-              selectedFilter === "breakfast"
+          <Link to="/category/breakfast">
+            <button
+              onClick={() => setSelectedFilter("breakfast")}
+              className={`px-4 py-2 rounded-full whitespace-nowrap ${
+                selectedFilter === "breakfast"
                 ? "bg-orange-500 text-white"
                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
           >
             Breakfast
           </button>
-          <button
-            onClick={() => setSelectedFilter("lunch")}
-            className={`px-4 py-2 rounded-full whitespace-nowrap ${
-              selectedFilter === "lunch"
+          </Link>
+          <Link to="/category/lunch">
+            <button
+              className={`px-4 py-2 rounded-full whitespace-nowrap ${
+                selectedFilter === "lunch"
                 ? "bg-orange-500 text-white"
                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-            }`}
-          >
-            Lunch
-          </button>
-          <button
-            onClick={() => setSelectedFilter("dinner")}
-            className={`px-4 py-2 rounded-full whitespace-nowrap ${
-              selectedFilter === "dinner"
+              }`}
+            >
+              Lunch
+            </button>
+          </Link>
+          <Link to="/category/dinner">
+            <button
+              className={`px-4 py-2 rounded-full whitespace-nowrap ${
+                selectedFilter === "dinner"
                 ? "bg-orange-500 text-white"
                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
             }`}
           >
             Dinner
           </button>
-          <button
-            onClick={() => setSelectedFilter("drinks")}
-            className={`px-4 py-2 rounded-full whitespace-nowrap ${
-              selectedFilter === "drinks"
+          </Link>
+          <Link to="/category/drinks">
+            <button
+              className={`px-4 py-2 rounded-full whitespace-nowrap ${
+                selectedFilter === "drinks"
                 ? "bg-orange-500 text-white"
                 : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-            }`}
-          >
-            Beverages
-          </button>
+              }`}
+            >
+              Beverages
+            </button>
+          </Link>
           <button
             onClick={() => setSelectedFilter("desserts")}
             className={`px-4 py-2 rounded-full whitespace-nowrap ${
@@ -310,7 +394,7 @@ function Menu() {
           <motion.div
             key={item.id}
             whileHover={{ scale: 1.03 }}
-            className="bg-white rounded-xl overflow-hidden shadow-lg"
+              className="bg-white/90 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg"
           >
             <div className="relative h-48">
               <img
@@ -351,7 +435,10 @@ function Menu() {
                 <span className="text-xl font-bold">
                   ${item.price.toFixed(2)}
                 </span>
-                <button className="px-4 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300">
+                <button
+                  onClick={() => addToCart(item)}
+                  className="px-4 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-300"
+                >
                   Add to cart
                 </button>
               </div>
@@ -376,6 +463,7 @@ function Menu() {
           </p>
         </div>
       )}
+      </div>
     </div>
   );
 }

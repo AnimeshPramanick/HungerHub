@@ -15,6 +15,14 @@ const Header = () => {
   });
   const [userRole, setUserRole] = useState(localStorage.getItem("userRole"));
   const [isLoading, setIsLoading] = useState(false);
+  const [cartCount, setCartCount] = useState(() => {
+    try {
+      const c = JSON.parse(localStorage.getItem("cart") || "[]");
+      return c.reduce((s, it) => s + (it.quantity || 0), 0);
+    } catch (e) {
+      return 0;
+    }
+  });
   const userMenuRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
@@ -69,10 +77,25 @@ const Header = () => {
         setIsMobileMenuOpen(false);
       }
     };
+    const updateCartCount = () => {
+      try {
+        const c = JSON.parse(localStorage.getItem("cart") || "[]");
+        setCartCount(c.reduce((s, it) => s + (it.quantity || 0), 0));
+      } catch (e) {
+        setCartCount(0);
+      }
+    };
+
+    // listen for custom event dispatched when cart changes
+    window.addEventListener("cartUpdated", updateCartCount);
+    // also listen for storage events from other tabs/windows
+    window.addEventListener("storage", updateCartCount);
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("cartUpdated", updateCartCount);
+      window.removeEventListener("storage", updateCartCount);
     };
   }, []);
 
@@ -230,7 +253,7 @@ const Header = () => {
                 >
                   <FaShoppingCart size={20} />
                   <span className="absolute -top-2 -right-2 bg-amber-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                    0
+                    {cartCount}
                   </span>
                 </Link>
 
